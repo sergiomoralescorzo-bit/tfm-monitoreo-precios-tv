@@ -105,7 +105,7 @@
                 "body": {
                   "To": "@parameters('correos')",
                   "Subject": "[TFM] Falló @{triggerBody()?['pipeline']} (@{outputs('Preparar')?['hora']} hora de Colombia)",
-                  "Body": "<p>Falló la pipeline <b>@{triggerBody()?['pipeline']}</b> de Synapse (<code>syn-tfm-webscraping</code>).</p><ul><li><b>Actividad:</b> @{triggerBody()?['actividad']}</li><li><b>Ejecución:</b> @{triggerBody()?['ejecucion']}</li><li><b>Hora (Colombia):</b> @{outputs('Preparar')?['hora']}</li></ul><p><b>Error:</b></p><pre>@{outputs('Preparar')?['error']}</pre><p><a href=\"@{outputs('Preparar')?['enlace']}\">Ver la ejecución en Synapse Studio</a></p><p style=\"color:gray\">Mensaje automático de la-tfm-notificaciones (TFM Monitoreo de precios).</p>",
+                  "Body": "<p>Falló la pipeline <b>@{triggerBody()?['pipeline']}</b> de Synapse (<code>@{last(split(parameters('synapseId'), '/'))}</code>).</p><ul><li><b>Actividad:</b> @{triggerBody()?['actividad']}</li><li><b>Ejecución:</b> @{triggerBody()?['ejecucion']}</li><li><b>Hora (Colombia):</b> @{outputs('Preparar')?['hora']}</li></ul><p><b>Error:</b></p><pre>@{outputs('Preparar')?['error']}</pre><p><a href=\"@{outputs('Preparar')?['enlace']}\">Ver la ejecución en Synapse Studio</a></p><p style=\"color:gray\">Mensaje automático de @{workflow().name} (TFM Monitoreo de precios).</p>",
                   "Importance": "High"
                 }
               }

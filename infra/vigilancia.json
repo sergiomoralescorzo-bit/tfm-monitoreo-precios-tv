@@ -96,7 +96,7 @@
                         "body": {
                           "pipeline": "@{items('Por_pipeline')}",
                           "ejecucion": "sin ejecución exitosa",
-                          "actividad": "Vigilancia diaria (la-tfm-vigilancia)",
+                          "actividad": "Vigilancia diaria (@{workflow().name})",
                           "error_b64": "@{base64(concat('No hay una ejecución exitosa de ', items('Por_pipeline'), ' entre las ', convertFromUtc(addHours(utcNow(), mul(-1, parameters('horasAtras'))), 'SA Pacific Standard Time', 'HH:mm'), ' y las ', convertFromUtc(utcNow(), 'SA Pacific Standard Time', 'HH:mm'), ' de hoy (hora de Colombia). Puede que el disparador no se haya activado, que la ejecución siga en curso o que haya fallado. Revise Monitor > Ejecuciones de pipeline en Synapse Studio. Respuesta de la consulta: HTTP ', string(outputs('Consultar')?['statusCode']), '.'))}"
                         }
                       },

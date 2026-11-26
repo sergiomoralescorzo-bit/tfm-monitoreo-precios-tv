@@ -68,7 +68,7 @@
                     "body": {
                       "To": "@{if(empty(items('Para_cada_mensaje')?['para']), parameters('correos'), items('Para_cada_mensaje')?['para'])}",
                       "Subject": "@{items('Para_cada_mensaje')?['asunto']}",
-                      "Body": "@{items('Para_cada_mensaje')?['html']}<p style=\"color:gray;font-size:smaller\">Mensaje automático de la-tfm-avisos (TFM Monitoreo de precios).</p>",
+                      "Body": "@{items('Para_cada_mensaje')?['html']}<p style=\"color:gray;font-size:smaller\">Mensaje automático de @{workflow().name} (TFM Monitoreo de precios).</p>",
                       "Importance": "Normal"
                     }
                   }
