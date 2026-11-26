@@ -1,0 +1,197 @@
+/// Eventos comerciales de las alertas y el resumen diario (src/medallon/eventos.py): tipo × producto × tienda × día.
+table fact_evento_comercial
+	lineageTag: c0f5d421-95ba-5614-88b2-1e260adbab4a
+
+	measure Eventos = COUNTROWS ( fact_evento_comercial )
+		formatString: #,0
+		displayFolder: Eventos
+		lineageTag: 8c17ddd7-06ae-5f3c-857f-d39da37ec54f
+
+	measure 'Cambios de precio' = CALCULATE ( [Eventos], fact_evento_comercial[tipo_evento] = "CAMBIO_PRECIO" )
+		formatString: #,0
+		displayFolder: Eventos
+		lineageTag: 6ea8ce85-b3b1-5442-a41f-1c3af202e7ed
+
+	measure Agotados = CALCULATE ( [Eventos], fact_evento_comercial[tipo_evento] = "AGOTADO" )
+		formatString: #,0
+		displayFolder: Eventos
+		lineageTag: a6074d8c-a3d5-52f6-a8c9-22e88c1e608f
+
+	measure 'Fin de promoción' = CALCULATE ( [Eventos], fact_evento_comercial[tipo_evento] = "FIN_PROMOCION" )
+		formatString: #,0
+		displayFolder: Eventos
+		lineageTag: 6dd49e7e-4f8e-5ae9-bd6d-e102d4aefc03
+
+	measure 'Productos nuevos' = CALCULATE ( [Eventos], fact_evento_comercial[tipo_evento] = "PRODUCTO_NUEVO" )
+		formatString: #,0
+		displayFolder: Eventos
+		lineageTag: 728c8923-30fb-57b4-b3c5-8a5c0e6427d6
+
+	measure 'Descuentos sin respaldo nuevos' = CALCULATE ( [Eventos], fact_evento_comercial[tipo_evento] = "DESCUENTO_SIN_RESPALDO" )
+		formatString: #,0
+		displayFolder: Eventos
+		lineageTag: 38e863ea-d583-5d4c-a5d1-f3510e04eea1
+
+	column fecha_key
+		dataType: int64
+		isHidden
+		lineageTag: 598484e7-242a-5617-af6d-97160640295d
+		summarizeBy: none
+		sourceColumn: fecha_key
+
+		annotation SummarizationSetBy = User
+
+	column tipo_evento
+		dataType: string
+		lineageTag: e7a621cc-1a4a-5971-bf72-846aff5ae007
+		summarizeBy: none
+		sourceColumn: tipo_evento
+
+		annotation SummarizationSetBy = User
+
+	column producto_key
+		dataType: string
+		isHidden
+		lineageTag: 4c673525-bddd-5742-a9bb-58bd3b5084a9
+		summarizeBy: none
+		sourceColumn: producto_key
+
+		annotation SummarizationSetBy = User
+
+	column tienda_key
+		dataType: int64
+		isHidden
+		lineageTag: 81098765-0821-5dc5-acfd-4c3f2bd87693
+		summarizeBy: none
+		sourceColumn: tienda_key
+
+		annotation SummarizationSetBy = User
+
+	column precio_anterior
+		dataType: int64
+		formatString: \$ #,0
+		lineageTag: c1e37d3b-cae0-5ea4-834e-446262ed707f
+		summarizeBy: none
+		sourceColumn: precio_anterior
+
+		annotation SummarizationSetBy = User
+
+	column precio_actual
+		dataType: int64
+		formatString: \$ #,0
+		lineageTag: 6f3ffe16-f22b-5b8c-9916-14462614e83d
+		summarizeBy: none
+		sourceColumn: precio_actual
+
+		annotation SummarizationSetBy = User
+
+	column variacion_pct
+		dataType: double
+		formatString: 0.0%
+		lineageTag: ebbccf64-8753-5432-b5d5-79d4a59c5e40
+		summarizeBy: none
+		sourceColumn: variacion_pct
+
+		annotation SummarizationSetBy = User
+
+	column precio_lista
+		dataType: int64
+		formatString: \$ #,0
+		lineageTag: fda2f140-5544-5b2a-a3e0-99e303e943ce
+		summarizeBy: none
+		sourceColumn: precio_lista
+
+		annotation SummarizationSetBy = User
+
+	column descuento_anunciado
+		dataType: double
+		formatString: 0.0%
+		lineageTag: dbda6a95-73ae-5070-bf83-bacdf5cf91b8
+		summarizeBy: none
+		sourceColumn: descuento_anunciado
+
+		annotation SummarizationSetBy = User
+
+	column descuento_respaldado
+		dataType: double
+		formatString: 0.0%
+		lineageTag: 9f07ee3c-f230-54d6-aaf2-8b38628b260a
+		summarizeBy: none
+		sourceColumn: descuento_respaldado
+
+		annotation SummarizationSetBy = User
+
+	column precio_referencia_30d
+		dataType: int64
+		formatString: \$ #,0
+		lineageTag: 6ccad24d-0670-5293-9e20-6c1b682dd711
+		summarizeBy: none
+		sourceColumn: precio_referencia_30d
+
+		annotation SummarizationSetBy = User
+
+	column dias_observados_30d
+		dataType: int64
+		formatString: 0
+		lineageTag: 0e0955ec-1fc7-5334-9577-3fdb84293cb7
+		summarizeBy: none
+		sourceColumn: dias_observados_30d
+
+		annotation SummarizationSetBy = User
+
+	column fecha_anterior_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: ba7aa634-4c8d-5507-b56d-be9938c6a8cf
+		summarizeBy: none
+		sourceColumn: fecha_anterior_key
+
+		annotation SummarizationSetBy = User
+
+	column dias_desde_anterior
+		dataType: int64
+		formatString: 0
+		lineageTag: e11050f9-fe85-58ab-8124-859823d976ca
+		summarizeBy: none
+		sourceColumn: dias_desde_anterior
+
+		annotation SummarizationSetBy = User
+
+	column revisar_atipico
+		dataType: boolean
+		lineageTag: 50897faa-4a6e-541e-ad20-6fbbad147599
+		summarizeBy: none
+		sourceColumn: revisar_atipico
+
+		annotation SummarizationSetBy = User
+
+	column url
+		dataType: string
+		lineageTag: e8ac2bda-3c1f-59d5-ab31-22b4c9e15248
+		dataCategory: WebUrl
+		summarizeBy: none
+		sourceColumn: url
+
+		annotation SummarizationSetBy = User
+
+	column ruta_bronze
+		dataType: string
+		isHidden
+		lineageTag: d86dff5a-36f0-5d75-b01d-af782064be69
+		summarizeBy: none
+		sourceColumn: ruta_bronze
+
+		annotation SummarizationSetBy = User
+
+	partition fact_evento_comercial = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database(Servidor, BaseDatos),
+				    Vista = Origen{[Schema = "oro", Item = "fact_evento_comercial"]}[Data]
+				in
+				    Vista
+
+	annotation PBI_ResultType = Table
+

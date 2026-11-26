@@ -1,0 +1,175 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.7.0/schema.json",
+  "name": "245237a5c04477d33626",
+  "position": {
+    "x": 24,
+    "y": 656,
+    "z": 1600,
+    "height": 32,
+    "width": 1232,
+    "tabOrder": 1600
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Colores por tienda:   ",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#5B6B7C",
+                      "fontFamily": "Segoe UI"
+                    }
+                  },
+                  {
+                    "value": "■ ",
+                    "textStyle": {
+                      "fontSize": "12pt",
+                      "color": "#1F5AA6"
+                    }
+                  },
+                  {
+                    "value": "Alkosto     ",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1B2A3A",
+                      "fontFamily": "Segoe UI"
+                    }
+                  },
+                  {
+                    "value": "■ ",
+                    "textStyle": {
+                      "fontSize": "12pt",
+                      "color": "#5FA8E8"
+                    }
+                  },
+                  {
+                    "value": "Ktronix     ",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1B2A3A",
+                      "fontFamily": "Segoe UI"
+                    }
+                  },
+                  {
+                    "value": "■ ",
+                    "textStyle": {
+                      "fontSize": "12pt",
+                      "color": "#7A4FB5"
+                    }
+                  },
+                  {
+                    "value": "Jumbo     ",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1B2A3A",
+                      "fontFamily": "Segoe UI"
+                    }
+                  },
+                  {
+                    "value": "■ ",
+                    "textStyle": {
+                      "fontSize": "12pt",
+                      "color": "#C2367A"
+                    }
+                  },
+                  {
+                    "value": "Olímpica     ",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1B2A3A",
+                      "fontFamily": "Segoe UI"
+                    }
+                  },
+                  {
+                    "value": "■ ",
+                    "textStyle": {
+                      "fontSize": "12pt",
+                      "color": "#E0A100"
+                    }
+                  },
+                  {
+                    "value": "Éxito     ",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1B2A3A",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "padding": [
+        {
+          "properties": {
+            "top": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "bottom": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "left": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "right": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

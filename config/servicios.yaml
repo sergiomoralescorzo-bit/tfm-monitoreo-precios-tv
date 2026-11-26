@@ -1,0 +1,19 @@
+# Parámetros del detector de descuentos, las alertas comerciales y el resumen diario
+# (fases 4 y 5; memoria, subapartados 5.3.6.3 y 5.3.6.4). Los lee src/medallon/detector.py,
+# src/medallon/eventos.py y src/servicios/avisos.py. Cambiarlos no exige tocar el código.
+
+detector:
+  # Precio de referencia: el menor precio de venta con existencias de la misma oferta en los
+  # `ventana_dias` días anteriores (sin contar el día evaluado). Criterio tomado del art. 6 bis de la
+  # Directiva 98/6/CE como referencia técnica, no como norma aplicable en Colombia.
+  ventana_dias: 30
+  # Mínimo de días observados con existencias dentro de la ventana; si faltan, el indicador queda nulo.
+  min_dias_observados: 20
+  # Se marca cuando el descuento anunciado supera al respaldado en más de este margen (5 puntos porcentuales).
+  margen: 0.05
+
+alertas:
+  # Cambio de precio de venta, con existencias los dos días, frente a la observación anterior de la oferta.
+  umbral_cambio_precio: 0.10
+  # Cuántos eventos de cada tipo se listan en el resumen diario (los de mayor variación primero).
+  max_por_tipo_en_resumen: 5

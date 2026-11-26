@@ -1,0 +1,25 @@
+model Model
+	culture: es-CO
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: es-CO
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation PBI_QueryOrder = ["Servidor", "BaseDatos", "dim_producto", "dim_tienda", "dim_calendario", "fact_precio_diario", "fact_ejecucion", "kpi_brecha_precio", "kpi_calidad_captura", "fact_evento_comercial"]
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table dim_producto
+ref table dim_tienda
+ref table dim_calendario
+ref table fact_precio_diario
+ref table fact_ejecucion
+ref table kpi_brecha_precio
+ref table kpi_calidad_captura
+ref table fact_evento_comercial
+
+ref cultureInfo es-CO
+

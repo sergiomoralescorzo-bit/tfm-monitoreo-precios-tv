@@ -1,0 +1,13 @@
+.venv/
+data/
+archivo/
+docs/
+tests/
+scripts/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+src/medallon/
+tests_spark/
+synapse/
+infra/

@@ -1,0 +1,234 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "descripcion": "Notificaciones de fallos de las pipelines del TFM (16-oct-2026). 1) Logic App la-tfm-notificaciones: la llama pl_notificar_fallo y envía un correo (Outlook) y una tarjeta a Teams (webhook de Workflows). 2) Respaldo: alerta de Azure Monitor sobre la métrica IntegrationPipelineRunsEnded (Result = Failed) de Synapse, con correo del grupo de acciones ag-tfm-fallos."
+  },
+  "parameters": {
+    "correos": {
+      "type": "array",
+      "metadata": { "description": "Destinatarios de los correos" }
+    },
+    "teamsWebhook": {
+      "type": "securestring",
+      "defaultValue": "",
+      "metadata": { "description": "URL del flujo de Teams 'Publicar en un canal cuando se reciba una solicitud de webhook'. Vacío = no publica en Teams." }
+    },
+    "synapse": { "type": "string", "defaultValue": "syn-tfm-webscraping" },
+    "ubicacion": { "type": "string", "defaultValue": "westus" }
+  },
+  "variables": {
+    "logicApp": "la-tfm-notificaciones",
+    "conexion": "office365-tfm",
+    "synapseId": "[resourceId('Microsoft.Synapse/workspaces', parameters('synapse'))]",
+    "office365Api": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('ubicacion'), 'office365')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Web/connections",
+      "apiVersion": "2016-06-01",
+      "name": "[variables('conexion')]",
+      "location": "[parameters('ubicacion')]",
+      "properties": {
+        "displayName": "Correo de alertas TFM (Outlook)",
+        "api": { "id": "[variables('office365Api')]" }
+      }
+    },
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2019-05-01",
+      "name": "[variables('logicApp')]",
+      "location": "[parameters('ubicacion')]",
+      "dependsOn": [ "[resourceId('Microsoft.Web/connections', variables('conexion'))]" ],
+      "properties": {
+        "state": "Enabled",
+        "parameters": {
+          "$connections": {
+            "value": {
+              "office365": {
+                "connectionId": "[resourceId('Microsoft.Web/connections', variables('conexion'))]",
+                "connectionName": "[variables('conexion')]",
+                "id": "[variables('office365Api')]"
+              }
+            }
+          },
+          "correos": { "value": "[join(parameters('correos'), ';')]" },
+          "teamsWebhook": { "value": "[parameters('teamsWebhook')]" },
+          "synapseId": { "value": "[variables('synapseId')]" }
+        },
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "$connections": { "type": "Object", "defaultValue": {} },
+            "correos": { "type": "String", "defaultValue": "" },
+            "teamsWebhook": { "type": "SecureString", "defaultValue": "" },
+            "synapseId": { "type": "String", "defaultValue": "" }
+          },
+          "triggers": {
+            "manual": {
+              "type": "Request",
+              "kind": "Http",
+              "inputs": {
+                "method": "POST",
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "pipeline": { "type": "string" },
+                    "ejecucion": { "type": "string" },
+                    "actividad": { "type": "string" },
+                    "error_b64": { "type": "string" }
+                  },
+                  "required": [ "pipeline", "ejecucion" ]
+                }
+              }
+            }
+          },
+          "actions": {
+            "Preparar": {
+              "type": "Compose",
+              "runAfter": {},
+              "inputs": {
+                "error": "@{if(empty(triggerBody()?['error_b64']), '(sin mensaje)', base64ToString(triggerBody()?['error_b64']))}",
+                "hora": "@{convertFromUtc(utcNow(), 'SA Pacific Standard Time', 'yyyy-MM-dd HH:mm')}",
+                "enlace": "@{concat('https://web.azuresynapse.net/monitoring/pipelineruns/', triggerBody()?['ejecucion'], '?workspace=', encodeUriComponent(parameters('synapseId')))}"
+              }
+            },
+            "Enviar_correo": {
+              "type": "ApiConnection",
+              "runAfter": { "Preparar": [ "Succeeded" ] },
+              "inputs": {
+                "host": { "connection": { "name": "@parameters('$connections')['office365']['connectionId']" } },
+                "method": "post",
+                "path": "/v2/Mail",
+                "body": {
+                  "To": "@parameters('correos')",
+                  "Subject": "[TFM] Falló @{triggerBody()?['pipeline']} (@{outputs('Preparar')?['hora']} hora de Colombia)",
+                  "Body": "<p>Falló la pipeline <b>@{triggerBody()?['pipeline']}</b> de Synapse (<code>syn-tfm-webscraping</code>).</p><ul><li><b>Actividad:</b> @{triggerBody()?['actividad']}</li><li><b>Ejecución:</b> @{triggerBody()?['ejecucion']}</li><li><b>Hora (Colombia):</b> @{outputs('Preparar')?['hora']}</li></ul><p><b>Error:</b></p><pre>@{outputs('Preparar')?['error']}</pre><p><a href=\"@{outputs('Preparar')?['enlace']}\">Ver la ejecución en Synapse Studio</a></p><p style=\"color:gray\">Mensaje automático de la-tfm-notificaciones (TFM Monitoreo de precios).</p>",
+                  "Importance": "High"
+                }
+              }
+            },
+            "Si_hay_Teams": {
+              "type": "If",
+              "runAfter": { "Preparar": [ "Succeeded" ] },
+              "expression": { "and": [ { "not": { "equals": [ "@parameters('teamsWebhook')", "" ] } } ] },
+              "actions": {
+                "Publicar_en_Teams": {
+                  "type": "Http",
+                  "inputs": {
+                    "method": "POST",
+                    "uri": "@parameters('teamsWebhook')",
+                    "headers": { "Content-Type": "application/json" },
+                    "body": {
+                      "type": "message",
+                      "attachments": [
+                        {
+                          "contentType": "application/vnd.microsoft.card.adaptive",
+                          "content": {
+                            "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                            "type": "AdaptiveCard",
+                            "version": "1.4",
+                            "body": [
+                              { "type": "TextBlock", "size": "Medium", "weight": "Bolder", "color": "Attention", "wrap": true,
+                                "text": "❌ Falló @{triggerBody()?['pipeline']}" },
+                              { "type": "FactSet", "facts": [
+                                { "title": "Actividad", "value": "@{triggerBody()?['actividad']}" },
+                                { "title": "Ejecución", "value": "@{triggerBody()?['ejecucion']}" },
+                                { "title": "Hora (Colombia)", "value": "@{outputs('Preparar')?['hora']}" } ] },
+                              { "type": "TextBlock", "wrap": true, "fontType": "Monospace", "size": "Small",
+                                "text": "@{outputs('Preparar')?['error']}" }
+                            ],
+                            "actions": [
+                              { "type": "Action.OpenUrl", "title": "Ver en Synapse Studio", "url": "@{outputs('Preparar')?['enlace']}" }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              "else": { "actions": {} }
+            },
+            "Responder": {
+              "type": "Response",
+              "kind": "Http",
+              "runAfter": {
+                "Enviar_correo": [ "Succeeded", "Failed", "Skipped", "TimedOut" ],
+                "Si_hay_Teams": [ "Succeeded", "Failed", "Skipped", "TimedOut" ]
+              },
+              "inputs": {
+                "statusCode": 200,
+                "body": {
+                  "correo": "@{actions('Enviar_correo')?['status']}",
+                  "teams": "@{actions('Si_hay_Teams')?['status']}"
+                }
+              }
+            }
+          },
+          "outputs": {}
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Insights/actionGroups",
+      "apiVersion": "2023-01-01",
+      "name": "ag-tfm-fallos",
+      "location": "global",
+      "properties": {
+        "groupShortName": "tfmfallos",
+        "enabled": true,
+        "copy": [
+          {
+            "name": "emailReceivers",
+            "count": "[length(parameters('correos'))]",
+            "input": {
+              "name": "[concat('correo', copyIndex('emailReceivers'))]",
+              "emailAddress": "[parameters('correos')[copyIndex('emailReceivers')]]",
+              "useCommonAlertSchema": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Insights/metricAlerts",
+      "apiVersion": "2018-03-01",
+      "name": "alerta-tfm-pipelines-fallidas",
+      "location": "global",
+      "dependsOn": [ "[resourceId('Microsoft.Insights/actionGroups', 'ag-tfm-fallos')]" ],
+      "properties": {
+        "description": "Respaldo de pl_notificar_fallo: alguna pipeline de syn-tfm-webscraping terminó en Failed (una alerta por pipeline).",
+        "severity": 1,
+        "enabled": true,
+        "scopes": [ "[variables('synapseId')]" ],
+        "evaluationFrequency": "PT5M",
+        "windowSize": "PT5M",
+        "autoMitigate": true,
+        "criteria": {
+          "odata.type": "Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria",
+          "allOf": [
+            {
+              "name": "pipelines_fallidas",
+              "criterionType": "StaticThresholdCriterion",
+              "metricNamespace": "Microsoft.Synapse/workspaces",
+              "metricName": "IntegrationPipelineRunsEnded",
+              "dimensions": [
+                { "name": "Result", "operator": "Include", "values": [ "Failed" ] },
+                { "name": "Pipeline", "operator": "Include", "values": [ "*" ] }
+              ],
+              "operator": "GreaterThan",
+              "threshold": 0,
+              "timeAggregation": "Total"
+            }
+          ]
+        },
+        "actions": [ { "actionGroupId": "[resourceId('Microsoft.Insights/actionGroups', 'ag-tfm-fallos')]" } ]
+      }
+    }
+  ],
+  "outputs": {
+    "logicAppId": { "type": "string", "value": "[resourceId('Microsoft.Logic/workflows', variables('logicApp'))]" }
+  }
+}

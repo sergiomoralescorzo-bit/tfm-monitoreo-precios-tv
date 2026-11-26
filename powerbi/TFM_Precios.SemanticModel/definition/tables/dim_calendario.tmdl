@@ -1,0 +1,121 @@
+/// Días con datos, del primero al último.
+table dim_calendario
+	lineageTag: 9708004d-c17c-5702-9507-ddfd480e7de1
+	dataCategory: Time
+
+	column fecha_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b7037cfc-70ca-5934-b04b-ba5d48c18304
+		summarizeBy: none
+		sourceColumn: fecha_key
+
+		annotation SummarizationSetBy = User
+
+	column fecha
+		dataType: dateTime
+		isKey
+		formatString: Short Date
+		lineageTag: 41cce7a7-b0d8-5021-8eef-f2ebc77432bb
+		summarizeBy: none
+		sourceColumn: fecha
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
+
+	column anio
+		dataType: int64
+		formatString: 0
+		lineageTag: e001d9e4-9780-57ac-a6b1-9084c518e2a8
+		summarizeBy: none
+		sourceColumn: anio
+
+		annotation SummarizationSetBy = User
+
+	column mes
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: ebce2513-fe6a-5c24-8cd6-0fe69138a543
+		summarizeBy: none
+		sourceColumn: mes
+
+		annotation SummarizationSetBy = User
+
+	column nombre_mes
+		dataType: string
+		lineageTag: c421ff09-13b0-5abd-b5f9-e642c5d92976
+		summarizeBy: none
+		sourceColumn: nombre_mes
+		sortByColumn: mes
+
+		annotation SummarizationSetBy = User
+
+	column anio_mes
+		dataType: string
+		lineageTag: 3ec567e1-6d99-5889-9eed-71d20729cba3
+		summarizeBy: none
+		sourceColumn: anio_mes
+
+		annotation SummarizationSetBy = User
+
+	column semana_iso
+		dataType: int64
+		formatString: 0
+		lineageTag: b84f09b3-e2e5-5d07-b1ab-948c15aede12
+		summarizeBy: none
+		sourceColumn: semana_iso
+
+		annotation SummarizationSetBy = User
+
+	column inicio_semana
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: f121eaa7-d07b-59be-9b34-4aeeccb93d72
+		summarizeBy: none
+		sourceColumn: inicio_semana
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation SummarizationSetBy = User
+
+	column dia_semana
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 0a04b5de-41b7-5515-b1de-aeeaa6df60c1
+		summarizeBy: none
+		sourceColumn: dia_semana
+
+		annotation SummarizationSetBy = User
+
+	column nombre_dia
+		dataType: string
+		lineageTag: 3734d144-2d91-5102-93dd-838fd4a1665d
+		summarizeBy: none
+		sourceColumn: nombre_dia
+		sortByColumn: dia_semana
+
+		annotation SummarizationSetBy = User
+
+	column es_fin_de_semana
+		dataType: boolean
+		lineageTag: 337b9fde-2dc5-54ed-a7b9-21e7b62b3f5a
+		summarizeBy: none
+		sourceColumn: es_fin_de_semana
+
+		annotation SummarizationSetBy = User
+
+	partition dim_calendario = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database(Servidor, BaseDatos),
+				    Vista = Origen{[Schema = "oro", Item = "dim_calendario"]}[Data]
+				in
+				    Vista
+
+	annotation PBI_ResultType = Table
+

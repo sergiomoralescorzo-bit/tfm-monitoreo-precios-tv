@@ -1,0 +1,1238 @@
+cultureInfo es-CO
+
+	linguisticMetadata =
+			{
+			  "Version": "2.0.0",
+			  "Language": "en-US",
+			  "Entities": {
+			    "kpi_brecha_precio.brecha_promedio_": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "kpi_brecha_precio",
+			          "ConceptualProperty": "Brecha promedio %"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Brecha promedio": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "kpi_brecha_precio.brecha_máxima_": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "kpi_brecha_precio",
+			          "ConceptualProperty": "Brecha máxima %"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Brecha máxima": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "kpi_brecha_precio.productos_comparados": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "kpi_brecha_precio",
+			          "ConceptualProperty": "Productos comparados"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Productos comparados": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "Productos": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "kpi_brecha_precio.brecha_promedio_1": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "kpi_brecha_precio",
+			          "ConceptualProperty": "Brecha promedio $"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Diferencia promedio": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "Diferencia promedio (COP)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_precio_diario.ofertas": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_precio_diario",
+			          "ConceptualProperty": "Ofertas"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Registros": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_precio_diario.productos": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_precio_diario",
+			          "ConceptualProperty": "Productos"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Productos": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_precio_diario.precio_mínimo": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_precio_diario",
+			          "ConceptualProperty": "Precio mínimo"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Precio más bajo": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_precio_diario.precio_mínimo_último_día": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_precio_diario",
+			          "ConceptualProperty": "Precio mínimo último día"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Precio más bajo": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_precio_diario.tienda_más_barata": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_precio_diario",
+			          "ConceptualProperty": "Tienda más barata"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Tienda": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_precio_diario.enlace_tienda_más_barata": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_precio_diario",
+			          "ConceptualProperty": "Enlace tienda más barata"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Enlace": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_precio_diario.precios_atípicos": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_precio_diario",
+			          "ConceptualProperty": "Precios atípicos"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Precios atípicos": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "kpi_calidad_captura.emparejamiento_": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "kpi_calidad_captura",
+			          "ConceptualProperty": "Emparejamiento %"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Emparejamiento": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "kpi_calidad_captura.completitud_": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "kpi_calidad_captura",
+			          "ConceptualProperty": "Completitud %"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Completitud": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_producto.descripcion": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_producto",
+			          "ConceptualProperty": "descripcion"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Producto": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_producto.marca": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_producto",
+			          "ConceptualProperty": "marca"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Marca": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_producto.pulgadas": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_producto",
+			          "ConceptualProperty": "pulgadas"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Pulgadas": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_producto.tecnologia": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_producto",
+			          "ConceptualProperty": "tecnologia"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Tecnología": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_ejecucion.tasa_de_éxito": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_ejecucion",
+			          "ConceptualProperty": "Tasa de éxito"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Ejecuciones exitosas": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_ejecucion.id_ejecucion": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_ejecucion",
+			          "ConceptualProperty": "id_ejecucion"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Ejecución": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_ejecucion.modo": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_ejecucion",
+			          "ConceptualProperty": "modo"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Modo": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_ejecucion.estado": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_ejecucion",
+			          "ConceptualProperty": "estado"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Estado": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_ejecucion.duracion_s": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_ejecucion",
+			          "ConceptualProperty": "duracion_s"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Duración (s)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_ejecucion.registros": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_ejecucion",
+			          "ConceptualProperty": "registros"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Registros": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_ejecucion.ok": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_ejecucion",
+			          "ConceptualProperty": "ok"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "OK": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_ejecucion.sin_stock": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_ejecucion",
+			          "ConceptualProperty": "sin_stock"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Sin stock": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_ejecucion.errores": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_ejecucion",
+			          "ConceptualProperty": "errores"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Errores": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_ejecucion.bloqueados": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_ejecucion",
+			          "ConceptualProperty": "bloqueados"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Bloqueos": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_ejecucion.ejecuciones_fallidas": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_ejecucion",
+			          "ConceptualProperty": "Ejecuciones fallidas"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Ejecuciones fallidas": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_ejecucion.duración_promedio_min": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_ejecucion",
+			          "ConceptualProperty": "Duración promedio (min)"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Duración promedio (min)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_calendario.fecha": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_calendario",
+			          "ConceptualProperty": "fecha"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Fecha": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_tienda.tienda": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_tienda",
+			          "ConceptualProperty": "tienda"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Tienda": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_precio_diario.última_actualización": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_precio_diario",
+			          "ConceptualProperty": "Última actualización"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Última actualización": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_precio_diario.sin_respaldo": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_precio_diario",
+			          "ConceptualProperty": "% sin respaldo"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "% sin respaldo": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_precio_diario.descuentos_sin_respaldo": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_precio_diario",
+			          "ConceptualProperty": "Descuentos sin respaldo"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Sin respaldo": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "Marcas": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_precio_diario.precio_lista": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_precio_diario",
+			          "ConceptualProperty": "precio_lista"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Precio de lista": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_precio_diario.precio_venta": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_precio_diario",
+			          "ConceptualProperty": "precio_venta"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Precio de venta": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_precio_diario.precio_referencia_30d": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_precio_diario",
+			          "ConceptualProperty": "precio_referencia_30d"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Referencia 30 días": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_precio_diario.descuento_pct": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_precio_diario",
+			          "ConceptualProperty": "descuento_pct"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Anunciado": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_precio_diario.descuento_respaldado": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_precio_diario",
+			          "ConceptualProperty": "descuento_respaldado"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Respaldado": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_precio_diario.url": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_precio_diario",
+			          "ConceptualProperty": "url"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Página": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_precio_diario.descuento_anunciado_evaluables": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_precio_diario",
+			          "ConceptualProperty": "Descuento anunciado (evaluables)"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Anunciado": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_precio_diario.ofertas_evaluables": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_precio_diario",
+			          "ConceptualProperty": "Ofertas evaluables"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Ofertas evaluables": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_precio_diario.descuento_respaldado_promedio": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_precio_diario",
+			          "ConceptualProperty": "Descuento respaldado promedio"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Respaldado": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "dim_producto.referencia": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "dim_producto",
+			          "ConceptualProperty": "referencia"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Referencia": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_evento_comercial.fin_de_promoción": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_evento_comercial",
+			          "ConceptualProperty": "Fin de promoción"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Fin de promoción": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_evento_comercial.productos_nuevos": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_evento_comercial",
+			          "ConceptualProperty": "Productos nuevos"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Nuevos": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_evento_comercial.eventos": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_evento_comercial",
+			          "ConceptualProperty": "Eventos"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Eventos": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_evento_comercial.agotados": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_evento_comercial",
+			          "ConceptualProperty": "Agotados"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Agotados": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_evento_comercial.descuentos_sin_respaldo_nuevos": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_evento_comercial",
+			          "ConceptualProperty": "Descuentos sin respaldo nuevos"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Sin respaldo (nuevos)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_evento_comercial.tipo_evento": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_evento_comercial",
+			          "ConceptualProperty": "tipo_evento"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Evento": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_evento_comercial.precio_anterior": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_evento_comercial",
+			          "ConceptualProperty": "precio_anterior"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Antes": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_evento_comercial.precio_actual": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_evento_comercial",
+			          "ConceptualProperty": "precio_actual"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Ahora": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_evento_comercial.variacion_pct": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_evento_comercial",
+			          "ConceptualProperty": "variacion_pct"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Variación": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_evento_comercial.revisar_atipico": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_evento_comercial",
+			          "ConceptualProperty": "revisar_atipico"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Revisar (atípico)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_evento_comercial.url": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_evento_comercial",
+			          "ConceptualProperty": "url"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Página": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "fact_evento_comercial.cambios_de_precio": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "fact_evento_comercial",
+			          "ConceptualProperty": "Cambios de precio"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Cambios de precio": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "kpi_brecha_precio.brecha_último_día_": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "kpi_brecha_precio",
+			          "ConceptualProperty": "Brecha último día %"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Brecha entre cadenas": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    }
+			  }
+			}
+		contentType: json
+

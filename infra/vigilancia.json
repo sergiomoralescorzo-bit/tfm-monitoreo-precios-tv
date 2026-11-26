@@ -1,0 +1,121 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "descripcion": "Vigilancia de ejecuciones del TFM (19-oct-2026). Logic App la-tfm-vigilancia: todos los días a las 09:30 de Colombia consulta en Synapse si pl_captura_diaria y pl_medallon_diario terminaron en Succeeded en las últimas 5 horas (los dos corren a diario desde el 19-oct, encadenados por pl_orquestador_diario). Si no, avisa por correo y Teams a través de la-tfm-notificaciones. Cubre el caso que la alerta de fallos no ve: que una pipeline no se ejecute (como el 18-oct)."
+  },
+  "parameters": {
+    "urlAviso": {
+      "type": "securestring",
+      "metadata": { "description": "URL firmada del disparador manual de la-tfm-notificaciones (se pide en cada despliegue; no va al repositorio)." }
+    },
+    "synapse": { "type": "string", "defaultValue": "syn-tfm-webscraping" },
+    "horasAtras": { "type": "int", "defaultValue": 5, "metadata": { "description": "Ventana de búsqueda: de 04:30 a 09:30 de Colombia." } },
+    "ubicacion": { "type": "string", "defaultValue": "westus" }
+  },
+  "variables": {
+    "logicApp": "la-tfm-vigilancia"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2019-05-01",
+      "name": "[variables('logicApp')]",
+      "location": "[parameters('ubicacion')]",
+      "identity": { "type": "SystemAssigned" },
+      "properties": {
+        "state": "Enabled",
+        "parameters": {
+          "urlAviso": { "value": "[parameters('urlAviso')]" },
+          "synapse": { "value": "[parameters('synapse')]" },
+          "horasAtras": { "value": "[parameters('horasAtras')]" }
+        },
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "urlAviso": { "type": "SecureString", "defaultValue": "" },
+            "synapse": { "type": "String", "defaultValue": "" },
+            "horasAtras": { "type": "Int", "defaultValue": 5 }
+          },
+          "triggers": {
+            "Diario_0930": {
+              "type": "Recurrence",
+              "recurrence": {
+                "frequency": "Day",
+                "interval": 1,
+                "startTime": "2026-10-19T00:00:00",
+                "timeZone": "SA Pacific Standard Time",
+                "schedule": { "hours": [ 9 ], "minutes": [ 30 ] }
+              }
+            }
+          },
+          "actions": {
+            "Vigiladas": {
+              "type": "Compose",
+              "runAfter": {},
+              "inputs": "@createArray('pl_captura_diaria', 'pl_medallon_diario')"
+            },
+            "Por_pipeline": {
+              "type": "Foreach",
+              "runAfter": { "Vigiladas": [ "Succeeded" ] },
+              "foreach": "@outputs('Vigiladas')",
+              "operationOptions": "Sequential",
+              "actions": {
+                "Consultar": {
+                  "type": "Http",
+                  "runAfter": {},
+                  "inputs": {
+                    "method": "POST",
+                    "uri": "@{concat('https://', parameters('synapse'), '.dev.azuresynapse.net/queryPipelineRuns?api-version=2020-12-01')}",
+                    "headers": { "Content-Type": "application/json" },
+                    "body": {
+                      "lastUpdatedAfter": "@{addHours(utcNow(), mul(-1, parameters('horasAtras')))}",
+                      "lastUpdatedBefore": "@{utcNow()}",
+                      "filters": [
+                        { "operand": "PipelineName", "operator": "Equals", "values": [ "@{items('Por_pipeline')}" ] },
+                        { "operand": "Status", "operator": "Equals", "values": [ "Succeeded" ] }
+                      ]
+                    },
+                    "authentication": { "type": "ManagedServiceIdentity", "audience": "https://dev.azuresynapse.net" }
+                  }
+                },
+                "Sin_exito": {
+                  "type": "If",
+                  "runAfter": { "Consultar": [ "Succeeded", "Failed", "TimedOut" ] },
+                  "expression": "@or(not(equals(outputs('Consultar')?['statusCode'], 200)), equals(length(coalesce(body('Consultar')?['value'], createArray())), 0))",
+                  "actions": {
+                    "Avisar": {
+                      "type": "Http",
+                      "runAfter": {},
+                      "inputs": {
+                        "method": "POST",
+                        "uri": "@parameters('urlAviso')",
+                        "headers": { "Content-Type": "application/json" },
+                        "body": {
+                          "pipeline": "@{items('Por_pipeline')}",
+                          "ejecucion": "sin ejecución exitosa",
+                          "actividad": "Vigilancia diaria (la-tfm-vigilancia)",
+                          "error_b64": "@{base64(concat('No hay una ejecución exitosa de ', items('Por_pipeline'), ' entre las ', convertFromUtc(addHours(utcNow(), mul(-1, parameters('horasAtras'))), 'SA Pacific Standard Time', 'HH:mm'), ' y las ', convertFromUtc(utcNow(), 'SA Pacific Standard Time', 'HH:mm'), ' de hoy (hora de Colombia). Puede que el disparador no se haya activado, que la ejecución siga en curso o que haya fallado. Revise Monitor > Ejecuciones de pipeline en Synapse Studio. Respuesta de la consulta: HTTP ', string(outputs('Consultar')?['statusCode']), '.'))}"
+                        }
+                      },
+                      "runtimeConfiguration": { "secureData": { "properties": [ "inputs" ] } }
+                    }
+                  },
+                  "else": { "actions": {} }
+                }
+              }
+            }
+          },
+          "outputs": {}
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "principalId": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Logic/workflows', variables('logicApp')), '2019-05-01', 'full').identity.principalId]"
+    }
+  }
+}

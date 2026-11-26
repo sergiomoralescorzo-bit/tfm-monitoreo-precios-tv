@@ -1,0 +1,21 @@
+{
+  "name": "tr_orquestador_diario",
+  "properties": {
+    "description": "Todos los días a las 06:00 de Colombia inicia pl_orquestador_diario: captura y luego medallón (desde el 19-oct-2026; reemplaza a tr_captura_diaria y tr_medallon_semanal). El contenedor hace la captura completa los domingos y el seguimiento los demás días. startTime va antes de la primera hora: con startTime igual a esa hora, Synapse no ejecutó el 18-oct.",
+    "annotations": [ "TFM" ],
+    "runtimeState": "Started",
+    "pipelines": [
+      { "pipelineReference": { "referenceName": "pl_orquestador_diario", "type": "PipelineReference" } }
+    ],
+    "type": "ScheduleTrigger",
+    "typeProperties": {
+      "recurrence": {
+        "frequency": "Day",
+        "interval": 1,
+        "startTime": "2026-10-17T00:00:00",
+        "timeZone": "SA Pacific Standard Time",
+        "schedule": { "hours": [ 6 ], "minutes": [ 0 ] }
+      }
+    }
+  }
+}

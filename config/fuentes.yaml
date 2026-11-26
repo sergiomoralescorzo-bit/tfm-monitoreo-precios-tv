@@ -1,0 +1,101 @@
+# Fuentes de captura - categoría Televisores.
+# Viabilidad: docs/anexos/A1_viabilidad_fuentes.md, A2_viabilidad_televisores.md y A3_extraccion.md.
+#
+# Cada sitio se recorre en dos pasos:
+#   1. descubrimiento: lista de fichas de televisores (sitemap público o listado de categoría).
+#   2. captura: se descarga cada ficha y se extraen precio, disponibilidad, EAN y vendedor.
+# Ninguna URL que se pida puede estar prohibida por el robots.txt del sitio (se verifica en el código).
+
+comunes:
+  user_agent: "TFM-MonitoreoPrecios/0.2 (proyecto academico de maestria; captura de precios publicos)"
+  pausa_segundos: 1.5          # intervalo mínimo entre peticiones a un mismo sitio
+  reintentos: 3                # para errores 5xx y de red (con espera creciente)
+  timeout_segundos: 30
+  max_bloqueos_seguidos: 3     # 403/429 consecutivos: se detiene el sitio y se registra BLOQUEADO
+
+almacenamiento:
+  # Carpeta raíz de datos locales. La variable de entorno TFM_DATOS la reemplaza
+  # (recomendado: una carpeta fuera de OneDrive, porque Bronze crece ~100 MB por día).
+  raiz_datos: data
+
+# Título o slug que identifica un televisor (se aplica a URLs del sitemap y a títulos).
+patron_televisor: '(?i)(^|[/\-\s])(tv|televisor|televisores|smart[\s\-]?tv)([/\-\s]|$)'
+
+fuentes:
+  alkosto:
+    cadena: Alkosto/Ktronix
+    sitio: https://www.alkosto.com
+    plataforma: SAP Commerce
+    tipo: sap_commerce
+    descubrimiento:
+      sitemap: /sitemap-productos.xml          # un solo archivo (~15 MB, ~30.000 productos)
+      patron_url: '(?i)\.com/(tv|televisor)[^/]*/p/\d{8,14}$'
+    ficha: "/p/{ean}"                          # la ficha resuelve directamente por EAN
+    vendedor_propio: Alkosto
+
+  ktronix:
+    cadena: Alkosto/Ktronix
+    sitio: https://www.ktronix.com
+    plataforma: SAP Commerce
+    tipo: sap_commerce
+    descubrimiento:
+      sitemap: /sitemap-productos.xml
+      patron_url: '(?i)\.com/(tv|televisor)[^/]*/p/\d{8,14}$'
+    ficha: "/p/{ean}"
+    vendedor_propio: Ktronix
+
+  jumbo:
+    cadena: Jumbo
+    sitio: https://www.jumbocolombia.com       # tiendasjumbo.co redirige aquí
+    plataforma: VTEX
+    tipo: vtex
+    descubrimiento:
+      sitemap: /sitemap.xml                    # índice; se leen los /sitemap/product-N.xml
+      patron_url: '(?i)\.com/(tv|televisor|smart-tv)[^/]*/p$'
+    # API pública de catálogo por ruta (sin parámetros de consulta).
+    ficha: "/api/catalog_system/pub/products/search/{slug}/p"
+    vendedor_propio: "1"                       # sellerName "Cencosud - Colombia"
+
+  olimpica:
+    cadena: Olímpica
+    sitio: https://www.olimpica.com
+    plataforma: VTEX
+    tipo: vtex
+    descubrimiento:
+      sitemap: /sitemap.xml
+      patron_url: '(?i)\.com/(tv|televisor|smart-tv)[^/]*/p$'
+    # robots.txt prohíbe URLs con "&" o "%": no se puede paginar la búsqueda (_from&_to).
+    # Por eso se descubre por sitemap y se consulta la API por ruta.
+    ficha: "/api/catalog_system/pub/products/search/{slug}/p"
+    vendedor_propio: "1"                       # sellerName "Olimpica"
+
+  exito:
+    cadena: Grupo Éxito
+    sitio: https://www.exito.com
+    plataforma: VTEX (frontal Next.js)
+    tipo: exito
+    descubrimiento:
+      # El sitemap no lista productos y el listado se carga en el cliente: se renderiza con
+      # Playwright. robots.txt permite /*?page= y prohíbe /api/, facetas y ordenamientos.
+      listado: /tecnologia/televisores
+      # Páginas por marca (televisores-lg, televisores-samsung...) tomadas del sitemap de categorías.
+      sitemap_listados: /sitemap/sitemap.xml
+      patron_listado: '/tecnologia/televisores/[a-z0-9\-]+$'
+      parametro_pagina: page
+      max_paginas: 60
+    # La ficha llega renderizada desde el servidor (__NEXT_DATA__): basta httpx, sin navegador.
+    ficha: "{url}"
+    # Desde el 12-nov-2026 Cloudflare bloquea httpx y Playwright. Decisión del grupo (16-nov-2026):
+    # listado, sitemap y fichas por Scrapling (src/extraccion/scrapling_exito.py). Quitar para volver a httpx.
+    motor: scrapling
+    # Con Scrapling, Éxito tarda unos 13 s por ficha. El job tiene 2 h y cada sitio se sube al terminar: Éxito se
+    # detiene a los 110 min (queda PARCIAL; deja ~10 min para subirlo) y cada día empieza en una ficha distinta (ejecutar.rotar).
+    presupuesto_minutos: 110
+    # Cierra y abre el navegador cada 50 páginas para liberar memoria (el 18-nov el job de 2 GiB se cortó a los 60 min).
+    reciclar_cada: 50
+    vendedor_propio: "1"                       # sellerName "exito"
+
+# Descartadas
+descartadas:
+  falabella:
+    motivo: "No publica EAN ni referencia del fabricante (gtin13 = null); decisión del equipo 13-oct-2026."

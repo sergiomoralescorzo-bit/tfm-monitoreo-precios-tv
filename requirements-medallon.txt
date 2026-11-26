@@ -1,0 +1,5 @@
+# Imagen del medallón (medallon.Dockerfile). Mismas versiones que tests_spark y Synapse Spark 3.4.
+pyspark==3.4.3
+delta-spark==2.4.0
+azure-identity>=1.17
+azure-storage-file-datalake>=12.16

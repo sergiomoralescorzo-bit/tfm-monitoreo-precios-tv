@@ -1,0 +1,553 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.13.0/schema.json",
+  "name": "ac9a8ec9c91d5177922e",
+  "position": {
+    "x": 24,
+    "y": 248,
+    "z": 20000,
+    "height": 448,
+    "width": 1232,
+    "tabOrder": 20000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_producto"
+                    }
+                  },
+                  "Property": "descripcion"
+                }
+              },
+              "queryRef": "dim_producto.descripcion",
+              "nativeQueryRef": "descripcion",
+              "displayName": "Producto"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_producto"
+                    }
+                  },
+                  "Property": "marca"
+                }
+              },
+              "queryRef": "dim_producto.marca",
+              "nativeQueryRef": "marca",
+              "displayName": "Marca"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_producto"
+                    }
+                  },
+                  "Property": "pulgadas"
+                }
+              },
+              "queryRef": "dim_producto.pulgadas",
+              "nativeQueryRef": "pulgadas",
+              "displayName": "Pulgadas"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_producto"
+                    }
+                  },
+                  "Property": "tecnologia"
+                }
+              },
+              "queryRef": "dim_producto.tecnologia",
+              "nativeQueryRef": "tecnologia",
+              "displayName": "Tecnología"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_precio_diario"
+                    }
+                  },
+                  "Property": "Precio mínimo último día"
+                }
+              },
+              "queryRef": "fact_precio_diario.Precio mínimo último día",
+              "nativeQueryRef": "Precio mínimo último día",
+              "displayName": "Precio más bajo"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_precio_diario"
+                    }
+                  },
+                  "Property": "Tienda más barata"
+                }
+              },
+              "queryRef": "fact_precio_diario.Tienda más barata",
+              "nativeQueryRef": "Tienda más barata",
+              "displayName": "Tienda"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "kpi_brecha_precio"
+                    }
+                  },
+                  "Property": "Brecha último día %"
+                }
+              },
+              "queryRef": "kpi_brecha_precio.Brecha último día %",
+              "nativeQueryRef": "Brecha último día %",
+              "displayName": "Brecha entre cadenas"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_precio_diario"
+                    }
+                  },
+                  "Property": "Enlace tienda más barata"
+                }
+              },
+              "queryRef": "fact_precio_diario.Enlace tienda más barata",
+              "nativeQueryRef": "Enlace tienda más barata",
+              "displayName": "Enlace"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "fact_precio_diario"
+                  }
+                },
+                "Property": "Precio mínimo último día"
+              }
+            },
+            "direction": "Ascending"
+          }
+        ]
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Menor precio por producto · en rojo: sin existencias del vendedor propio de la tienda (puede haber oferta de terceros en la página)'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "values": [
+        {
+          "properties": {
+            "urlIcon": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "backColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "fact_precio_diario"
+                        }
+                      },
+                      "Property": "Color fila sin existencias"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
+            "metadata": "dim_producto.descripcion"
+          }
+        },
+        {
+          "properties": {
+            "backColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "fact_precio_diario"
+                        }
+                      },
+                      "Property": "Color fila sin existencias"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
+            "metadata": "dim_producto.marca"
+          }
+        },
+        {
+          "properties": {
+            "backColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "fact_precio_diario"
+                        }
+                      },
+                      "Property": "Color fila sin existencias"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
+            "metadata": "dim_producto.pulgadas"
+          }
+        },
+        {
+          "properties": {
+            "backColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "fact_precio_diario"
+                        }
+                      },
+                      "Property": "Color fila sin existencias"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
+            "metadata": "dim_producto.tecnologia"
+          }
+        },
+        {
+          "properties": {
+            "backColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "fact_precio_diario"
+                        }
+                      },
+                      "Property": "Color fila sin existencias"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
+            "metadata": "fact_precio_diario.Precio mínimo último día"
+          }
+        },
+        {
+          "properties": {
+            "backColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "fact_precio_diario"
+                        }
+                      },
+                      "Property": "Color fila sin existencias"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
+            "metadata": "fact_precio_diario.Tienda más barata"
+          }
+        },
+        {
+          "properties": {
+            "backColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "fact_precio_diario"
+                        }
+                      },
+                      "Property": "Color fila sin existencias"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
+            "metadata": "kpi_brecha_precio.Brecha último día %"
+          }
+        },
+        {
+          "properties": {
+            "backColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "fact_precio_diario"
+                        }
+                      },
+                      "Property": "Color fila sin existencias"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
+            "metadata": "fact_precio_diario.Enlace tienda más barata"
+          }
+        }
+      ],
+      "total": [
+        {
+          "properties": {
+            "totals": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "b0c9ca06b12eeed2debb",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "dim_producto"
+              }
+            },
+            "Property": "descripcion"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "2f80d31997c4a5764690",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "dim_producto"
+              }
+            },
+            "Property": "marca"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "ded36b20e6f86a747c01",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "dim_producto"
+              }
+            },
+            "Property": "pulgadas"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "f2e7b9bf930457841125",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "dim_producto"
+              }
+            },
+            "Property": "tecnologia"
+          }
+        },
+        "type": "Categorical"
+      },
+      {
+        "name": "e3f9a6b738da9cc45b8e",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "fact_precio_diario"
+              }
+            },
+            "Property": "Precio mínimo último día"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "4c753b54f6a053b1ae97",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "fact_precio_diario"
+              }
+            },
+            "Property": "Tienda más barata"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "e44ed4ba5a7845396b0d",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "kpi_brecha_precio"
+              }
+            },
+            "Property": "Brecha último día %"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
+  }
+}

@@ -1,0 +1,332 @@
+/// Producto × tienda × día, con la última captura del día (RF-06). Trazable hasta bronce (ruta_bronze).
+table fact_precio_diario
+	lineageTag: 5011e0a3-4700-5089-97bf-b20abe21d40f
+
+	measure Ofertas = COUNTROWS ( fact_precio_diario )
+		formatString: #,0
+		displayFolder: Precios
+		lineageTag: 96e50b4d-a451-549c-8553-d057bb0ad362
+
+	measure Productos = DISTINCTCOUNT ( fact_precio_diario[producto_key] )
+		formatString: #,0
+		displayFolder: Precios
+		lineageTag: 0d44a9c3-1c5f-5474-b052-171866809958
+
+	measure 'Precio mínimo' = CALCULATE ( MIN ( fact_precio_diario[precio_venta] ), fact_precio_diario[disponible] = TRUE () )
+		formatString: \$ #,0
+		displayFolder: Precios
+		lineageTag: beaf955b-34cb-567b-b29d-1f4b9e6c45f1
+
+	measure 'Precio promedio' = CALCULATE ( AVERAGE ( fact_precio_diario[precio_venta] ), fact_precio_diario[disponible] = TRUE () )
+		formatString: \$ #,0
+		displayFolder: Precios
+		lineageTag: dc5887dc-68e1-5a39-a20f-9de1ae03135e
+
+	measure 'Precio máximo' = CALCULATE ( MAX ( fact_precio_diario[precio_venta] ), fact_precio_diario[disponible] = TRUE () )
+		formatString: \$ #,0
+		displayFolder: Precios
+		lineageTag: 39bba077-1596-5649-a1fc-e4680fbf7aa8
+
+	measure 'Descuento promedio' = AVERAGE ( fact_precio_diario[descuento_pct] )
+		formatString: 0.0%
+		displayFolder: Precios
+		lineageTag: 084eb59a-ee29-5f0f-a416-293db6afbb1a
+
+	measure 'Última fecha con precio' = CALCULATE ( MAX ( fact_precio_diario[fecha_key] ), ALLSELECTED ( dim_calendario ), fact_precio_diario[disponible] = TRUE () )
+		formatString: 0
+		displayFolder: Precios
+		lineageTag: 5d111693-3cd6-5bf8-80e2-61d37496b1bd
+
+	measure 'Precio mínimo último día' =
+			VAR _fecha = [Última fecha con precio]
+			RETURN
+			    CALCULATE ( [Precio mínimo], dim_calendario[fecha_key] = _fecha )
+		formatString: \$ #,0
+		displayFolder: Precios
+		lineageTag: 020b50ec-0de3-5d80-85e6-53698fbcfedc
+
+	measure 'Tienda más barata' =
+			VAR _fecha = [Última fecha con precio]
+			VAR _precio = [Precio mínimo último día]
+			RETURN
+			    IF (
+			        NOT ISBLANK ( _precio ),
+			        CONCATENATEX (
+			            FILTER (
+			                VALUES ( dim_tienda[tienda] ),
+			                CALCULATE (
+			                    COUNTROWS ( fact_precio_diario ),
+			                    dim_calendario[fecha_key] = _fecha,
+			                    fact_precio_diario[precio_venta] = _precio,
+			                    fact_precio_diario[disponible] = TRUE ()
+			                ) > 0
+			            ),
+			            dim_tienda[tienda],
+			            ", ",
+			            dim_tienda[tienda], ASC
+			        )
+			    )
+		displayFolder: Precios
+		lineageTag: febb352a-db51-594d-b2fe-a1a194dd95af
+
+	measure 'Tiendas con oferta' = CALCULATE ( DISTINCTCOUNT ( fact_precio_diario[tienda_key] ), fact_precio_diario[disponible] = TRUE () )
+		formatString: #,0
+		displayFolder: Precios
+		lineageTag: 8033530b-1a63-51c5-b46d-519d69b49126
+
+	measure 'Precios atípicos' = IF ( NOT ISBLANK ( COUNTROWS ( fact_precio_diario ) ), CALCULATE ( COUNTROWS ( fact_precio_diario ), NOT ISBLANK ( fact_precio_diario[motivos_atipico] ) ) + 0 )
+		formatString: #,0
+		displayFolder: Calidad
+		lineageTag: f49acbf2-23f7-51be-a73c-4c10be37b7ab
+
+	measure 'Enlace tienda más barata' =
+			VAR _fecha = [Última fecha con precio]
+			VAR _precio = [Precio mínimo último día]
+			VAR _filas =
+			    CALCULATETABLE (
+			        SUMMARIZE ( fact_precio_diario, dim_tienda[tienda], fact_precio_diario[url] ),
+			        dim_calendario[fecha_key] = _fecha,
+			        fact_precio_diario[precio_venta] = _precio,
+			        fact_precio_diario[disponible] = TRUE ()
+			    )
+			RETURN
+			    IF (
+			        NOT ISBLANK ( _precio ),
+			        IF (
+			            [Sin existencias en la última captura] = 1,
+			            "Sin existencias",
+			            MAXX ( TOPN ( 1, _filas, dim_tienda[tienda], ASC ), fact_precio_diario[url] )
+			        )
+			    )
+		displayFolder: Precios
+		lineageTag: d709f32d-460f-446b-a2cf-6884d0778175
+		dataCategory: WebUrl
+
+	/// Fecha y hora (Colombia, UTC−5) de la captura más reciente cargada en oro; no depende de los filtros.
+	measure 'Última actualización' =
+			VAR _ultima = CALCULATE ( MAX ( fact_precio_diario[fecha_captura_utc] ), ALL ( fact_precio_diario ) )
+			VAR _local = _ultima - 5 / 24
+			VAR _hora = HOUR ( _local )
+			RETURN
+			    IF (
+			        NOT ISBLANK ( _ultima ),
+			        FORMAT ( _local, "dd/mm/yyyy" ) & "  " & ( MOD ( _hora + 11, 12 ) + 1 ) & ":"
+			            & FORMAT ( MINUTE ( _local ), "00" ) & IF ( _hora < 12, " a. m.", " p. m." )
+			    )
+		displayFolder: Precios
+		lineageTag: 1f74d3d5-ef01-45a0-b395-03dd6209bc13
+
+	/// Ofertas con existencias, descuento anunciado y al menos 20 días observados en la ventana de 30.
+	measure 'Ofertas evaluables' = CALCULATE ( COUNTROWS ( fact_precio_diario ), NOT ISBLANK ( fact_precio_diario[descuento_sin_respaldo] ) )
+		formatString: #,0
+		displayFolder: Detector
+		lineageTag: a753ce85-aef0-58bd-a825-7739ecef3de8
+
+	/// Ofertas cuyo descuento anunciado supera al respaldado en más de 5 puntos porcentuales.
+	measure 'Descuentos sin respaldo' = CALCULATE ( COUNTROWS ( fact_precio_diario ), fact_precio_diario[descuento_sin_respaldo] = TRUE () )
+		formatString: #,0
+		displayFolder: Detector
+		lineageTag: 2aec3d8f-06f9-52b9-9a8a-ea236ad5d476
+
+	/// Descuentos sin respaldo sobre ofertas evaluables.
+	measure '% sin respaldo' = DIVIDE ( [Descuentos sin respaldo], [Ofertas evaluables] )
+		formatString: 0.0%
+		displayFolder: Detector
+		lineageTag: 57ba1b1d-56a2-50a3-81eb-4fddd2d95fe5
+
+	/// 1 − venta / lista, promedio de las ofertas evaluables.
+	measure 'Descuento anunciado (evaluables)' = CALCULATE ( AVERAGE ( fact_precio_diario[descuento_pct] ), NOT ISBLANK ( fact_precio_diario[descuento_sin_respaldo] ) )
+		formatString: 0.0%
+		displayFolder: Detector
+		lineageTag: 94c0955e-ca84-577c-8122-04d58478eac6
+
+	/// 1 − venta / menor precio de los 30 días anteriores, promedio de las ofertas evaluables.
+	measure 'Descuento respaldado promedio' = AVERAGE ( fact_precio_diario[descuento_respaldado] )
+		formatString: 0.0%
+		displayFolder: Detector
+		lineageTag: de9515b9-8fd2-5176-b476-a5471288f0f7
+
+	/// Producto que tuvo existencias en el periodo pero no en la última captura (agotado o ya no publicado).
+	measure 'Sin existencias en la última captura' =
+			VAR _ultima = CALCULATE ( MAX ( fact_precio_diario[fecha_key] ), ALLSELECTED ( dim_calendario ), REMOVEFILTERS ( dim_producto ) )
+			VAR _fecha = [Última fecha con precio]
+			RETURN
+			    IF ( NOT ISBLANK ( _fecha ), IF ( _fecha < _ultima, 1, 0 ) )
+		formatString: 0
+		displayFolder: Precios
+		lineageTag: 89ea4f65-95ec-55b6-8ab1-a0ac2342bcaa
+
+	/// Color de fondo de la fila en la tabla de Resumen: rojo suave si no hay existencias en la última captura.
+	measure 'Color fila sin existencias' = IF ( [Sin existencias en la última captura] = 1, "#FDE2E2" )
+		displayFolder: Precios
+		lineageTag: 56044cb7-be25-523e-91fa-295aa3a57183
+
+	column fecha_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 012faae0-dfe4-5625-b1ec-f6d0201a92a5
+		summarizeBy: none
+		sourceColumn: fecha_key
+
+		annotation SummarizationSetBy = User
+
+	column producto_key
+		dataType: string
+		isHidden
+		lineageTag: 13b1a076-ad60-57b6-b18e-a522908e9cdf
+		summarizeBy: none
+		sourceColumn: producto_key
+
+		annotation SummarizationSetBy = User
+
+	column tienda_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b6d0ceec-e1fe-5725-bcda-613c0c117f76
+		summarizeBy: none
+		sourceColumn: tienda_key
+
+		annotation SummarizationSetBy = User
+
+	column precio_lista
+		dataType: int64
+		formatString: \$ #,0
+		lineageTag: 5271195c-9dd8-5c71-830b-616503077e7d
+		summarizeBy: none
+		sourceColumn: precio_lista
+
+		annotation SummarizationSetBy = User
+
+	column precio_venta
+		dataType: int64
+		formatString: \$ #,0
+		lineageTag: e88e17b3-9123-5092-815d-45ad6884a4b1
+		summarizeBy: none
+		sourceColumn: precio_venta
+
+		annotation SummarizationSetBy = User
+
+	column descuento_pct
+		dataType: double
+		formatString: 0.0%
+		lineageTag: 58af2b1c-0025-5f3d-a855-d5f83a349e8e
+		summarizeBy: none
+		sourceColumn: descuento_pct
+
+		annotation SummarizationSetBy = User
+
+	column disponible
+		dataType: boolean
+		lineageTag: ae9e549f-1c8e-5c73-9afb-c996263c3801
+		summarizeBy: none
+		sourceColumn: disponible
+
+		annotation SummarizationSetBy = User
+
+	column stock
+		dataType: int64
+		formatString: 0
+		lineageTag: 8f9e5308-bd6e-5beb-91e5-512d8c185459
+		summarizeBy: none
+		sourceColumn: stock
+
+		annotation SummarizationSetBy = User
+
+	column metodo_emparejamiento
+		dataType: string
+		lineageTag: 0caf8f82-cdbd-5c52-bcbd-fe7ceb3c2608
+		summarizeBy: none
+		sourceColumn: metodo_emparejamiento
+
+		annotation SummarizationSetBy = User
+
+	column fecha_captura_utc
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 302f27d4-876a-536a-ba65-6288534f47ba
+		summarizeBy: none
+		sourceColumn: fecha_captura_utc
+
+		annotation SummarizationSetBy = User
+
+	column id_ejecucion
+		dataType: string
+		lineageTag: 7f303bf6-37b5-504e-a2bb-bdf8c97dfbeb
+		summarizeBy: none
+		sourceColumn: id_ejecucion
+
+		annotation SummarizationSetBy = User
+
+	column ruta_bronze
+		dataType: string
+		lineageTag: 49dc6843-7689-55f3-8fec-18c6c83919f1
+		summarizeBy: none
+		sourceColumn: ruta_bronze
+
+		annotation SummarizationSetBy = User
+
+	column url
+		dataType: string
+		lineageTag: ea07bbbc-d0d0-581c-9929-17f81973fc13
+		dataCategory: WebUrl
+		summarizeBy: none
+		sourceColumn: url
+
+		annotation SummarizationSetBy = User
+
+	column motivos_atipico
+		dataType: string
+		lineageTag: 013ba2a0-0ec5-53e4-9eb5-07d80ac91d1f
+		summarizeBy: none
+		sourceColumn: motivos_atipico
+
+		annotation SummarizationSetBy = User
+
+	column precio_referencia_30d
+		dataType: int64
+		formatString: \$ #,0
+		lineageTag: 6a54893a-7de1-5092-8f83-d5510efa3a62
+		summarizeBy: none
+		sourceColumn: precio_referencia_30d
+
+		annotation SummarizationSetBy = User
+
+	column dias_observados_30d
+		dataType: int64
+		formatString: 0
+		lineageTag: 97f0c117-640e-5a7d-9240-98bbfc16985c
+		summarizeBy: none
+		sourceColumn: dias_observados_30d
+
+		annotation SummarizationSetBy = User
+
+	column descuento_respaldado
+		dataType: double
+		formatString: 0.0%
+		lineageTag: 352661a2-2304-5874-abe6-f5598d163060
+		summarizeBy: none
+		sourceColumn: descuento_respaldado
+
+		annotation SummarizationSetBy = User
+
+	column descuento_sin_respaldo
+		dataType: boolean
+		lineageTag: 31ca3bbd-5cb9-5575-85b9-f1a97f932f53
+		summarizeBy: none
+		sourceColumn: descuento_sin_respaldo
+
+		annotation SummarizationSetBy = User
+
+	partition fact_precio_diario = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database(Servidor, BaseDatos),
+				    Vista = Origen{[Schema = "oro", Item = "fact_precio_diario"]}[Data]
+				in
+				    Vista
+
+	annotation PBI_ResultType = Table
+

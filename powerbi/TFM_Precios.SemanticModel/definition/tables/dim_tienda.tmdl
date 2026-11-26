@@ -1,0 +1,49 @@
+/// Sitios capturados y su cadena (Alkosto y Ktronix son la misma cadena).
+table dim_tienda
+	lineageTag: ddfeaf07-a022-50f8-9fc2-0ab2c39e5571
+
+	column tienda_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: ec84c7f7-dc89-5ec2-8c1e-475819b61b5b
+		summarizeBy: none
+		sourceColumn: tienda_key
+
+		annotation SummarizationSetBy = User
+
+	column sitio
+		dataType: string
+		lineageTag: b4a646e8-2bee-52d5-9169-f2b8e46207cf
+		summarizeBy: none
+		sourceColumn: sitio
+
+		annotation SummarizationSetBy = User
+
+	column tienda
+		dataType: string
+		lineageTag: 8b1abdee-5126-511c-a406-e3afbe9f38e4
+		summarizeBy: none
+		sourceColumn: tienda
+
+		annotation SummarizationSetBy = User
+
+	column cadena
+		dataType: string
+		lineageTag: e3ae022f-03c2-58f6-85b8-0edde417ca1e
+		summarizeBy: none
+		sourceColumn: cadena
+
+		annotation SummarizationSetBy = User
+
+	partition dim_tienda = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database(Servidor, BaseDatos),
+				    Vista = Origen{[Schema = "oro", Item = "dim_tienda"]}[Data]
+				in
+				    Vista
+
+	annotation PBI_ResultType = Table
+

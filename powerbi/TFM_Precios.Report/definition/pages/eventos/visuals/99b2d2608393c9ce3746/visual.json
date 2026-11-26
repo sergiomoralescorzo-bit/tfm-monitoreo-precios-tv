@@ -1,0 +1,101 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.7.0/schema.json",
+  "name": "99b2d2608393c9ce3746",
+  "position": {
+    "x": 1059,
+    "y": 152,
+    "z": 15000,
+    "height": 84,
+    "width": 197,
+    "tabOrder": 15000
+  },
+  "visual": {
+    "visualType": "card",
+    "drillFilterOtherVisuals": true,
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_evento_comercial"
+                    }
+                  },
+                  "Property": "Descuentos sin respaldo nuevos"
+                }
+              },
+              "queryRef": "fact_evento_comercial.Descuentos sin respaldo nuevos",
+              "nativeQueryRef": "Descuentos sin respaldo nuevos",
+              "displayName": "Sin respaldo (nuevos)"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Sin respaldo (nuevos)'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "showTooltipButton": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeaderTooltip": [
+        {
+          "properties": {
+            "type": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Text'"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Ofertas que el detector empezó a marcar ese día.'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

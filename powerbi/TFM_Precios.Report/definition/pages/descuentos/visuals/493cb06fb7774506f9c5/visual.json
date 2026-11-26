@@ -1,0 +1,230 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.7.0/schema.json",
+  "name": "493cb06fb7774506f9c5",
+  "position": {
+    "x": 600,
+    "y": 16,
+    "z": 1050,
+    "width": 420,
+    "height": 32,
+    "tabOrder": 1050
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "■ ",
+                    "textStyle": {
+                      "fontSize": "11pt",
+                      "color": "#1F5AA6"
+                    }
+                  },
+                  {
+                    "value": "Alkosto    ",
+                    "textStyle": {
+                      "fontSize": "9pt",
+                      "color": "#1B2A3A",
+                      "fontFamily": "Segoe UI"
+                    }
+                  },
+                  {
+                    "value": "■ ",
+                    "textStyle": {
+                      "fontSize": "11pt",
+                      "color": "#5FA8E8"
+                    }
+                  },
+                  {
+                    "value": "Ktronix    ",
+                    "textStyle": {
+                      "fontSize": "9pt",
+                      "color": "#1B2A3A",
+                      "fontFamily": "Segoe UI"
+                    }
+                  },
+                  {
+                    "value": "■ ",
+                    "textStyle": {
+                      "fontSize": "11pt",
+                      "color": "#7A4FB5"
+                    }
+                  },
+                  {
+                    "value": "Jumbo    ",
+                    "textStyle": {
+                      "fontSize": "9pt",
+                      "color": "#1B2A3A",
+                      "fontFamily": "Segoe UI"
+                    }
+                  },
+                  {
+                    "value": "■ ",
+                    "textStyle": {
+                      "fontSize": "11pt",
+                      "color": "#C2367A"
+                    }
+                  },
+                  {
+                    "value": "Olímpica    ",
+                    "textStyle": {
+                      "fontSize": "9pt",
+                      "color": "#1B2A3A",
+                      "fontFamily": "Segoe UI"
+                    }
+                  },
+                  {
+                    "value": "■ ",
+                    "textStyle": {
+                      "fontSize": "11pt",
+                      "color": "#E0A100"
+                    }
+                  },
+                  {
+                    "value": "Éxito    ",
+                    "textStyle": {
+                      "fontSize": "9pt",
+                      "color": "#1B2A3A",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ],
+                "horizontalTextAlignment": "center"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FFFFFF'"
+                    }
+                  }
+                }
+              }
+            },
+            "transparency": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FFFFFF'"
+                    }
+                  }
+                }
+              }
+            },
+            "radius": {
+              "expr": {
+                "Literal": {
+                  "Value": "16D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "padding": [
+        {
+          "properties": {
+            "top": {
+              "expr": {
+                "Literal": {
+                  "Value": "4D"
+                }
+              }
+            },
+            "bottom": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "left": {
+              "expr": {
+                "Literal": {
+                  "Value": "8D"
+                }
+              }
+            },
+            "right": {
+              "expr": {
+                "Literal": {
+                  "Value": "8D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "visualHeader": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "howCreated": "InsertVisualButton"
+}

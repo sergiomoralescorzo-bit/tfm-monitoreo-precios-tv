@@ -1,0 +1,33 @@
+{
+  "name": "pl_notificar_fallo",
+  "properties": {
+    "description": "Avisa por correo y Teams (Logic App la-tfm-notificaciones) que una pipeline falló. La llaman pl_captura_diaria, pl_medallon_diario y pl_medallon_synapse desde la rama de fallo de cada actividad. El error viaja en base64 para que comillas y saltos de línea no rompan el JSON.",
+    "parameters": {
+      "pipeline": { "type": "String" },
+      "ejecucion": { "type": "String" },
+      "actividad": { "type": "String", "defaultValue": "" },
+      "error": { "type": "String", "defaultValue": "" }
+    },
+    "activities": [
+      {
+        "name": "Enviar aviso",
+        "type": "WebActivity",
+        "policy": {
+          "timeout": "0.00:02:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 30,
+          "secureInput": true
+        },
+        "typeProperties": {
+          "method": "POST",
+          "url": "__URL_NOTIFICACION__",
+          "headers": { "Content-Type": "application/json" },
+          "body": {
+            "value": "@concat('{\"pipeline\":\"', pipeline().parameters.pipeline, '\",\"ejecucion\":\"', pipeline().parameters.ejecucion, '\",\"actividad\":\"', pipeline().parameters.actividad, '\",\"error_b64\":\"', base64(coalesce(pipeline().parameters.error, '')), '\"}')",
+            "type": "Expression"
+          }
+        }
+      }
+    ]
+  }
+}

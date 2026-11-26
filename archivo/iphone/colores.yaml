@@ -1,0 +1,61 @@
+# Abreviaturas de color usadas en "Desc Producto" (maestro Alkosto) -> color normalizado.
+# Las marcadas con "# confirmar" son inferencias; validarlas con el equipo comercial.
+abreviaturas:
+  Az: azul
+  AzM: azul medianoche      # confirmado
+  Azmd: azul medianoche     # confirmar
+  Pl: plata
+  Ng: negro
+  NgM: negro                # confirmar (negro mate / medianoche)
+  NgB: negro                # confirmar (negro brillante)
+  NgBr: negro               # confirmar
+  N: negro
+  Nr: negro                 # confirmado por el equipo
+  Na: naranja               # confirmado
+  Bl: blanco
+  B: blanco
+  Bla: blanco
+  Gr: gris
+  Dr: dorado
+  Or: oro
+  Oro: oro
+  Vr: verde
+  Vd: verde                 # confirmado
+  Rs: rosa
+  RsDr: oro rosa            # confirmar
+  Mr: morado                # confirmado
+  Mo: morado                # confirmar
+  Vt: violeta               # probable (equipo)
+  Rj: rojo
+  Am: amarillo
+
+# Palabras completas que aparecen en descripciones y títulos de las tiendas.
+palabras:
+  azul: azul
+  ultramarino: azul
+  medianoche: negro
+  negro: negro
+  black: negro
+  blanco: blanco
+  white: blanco
+  plata: plata
+  plateado: plata
+  silver: plata
+  gris: gris
+  grafito: gris
+  dorado: dorado
+  oro: oro
+  gold: oro
+  verde: verde
+  salvia: verde
+  rosa: rosa
+  rosado: rosa
+  rojo: rojo
+  red: rojo
+  morado: morado
+  purpura: morado
+  lila: morado
+  lavanda: morado
+  amarillo: amarillo
+  naranja: naranja
+  borgona: borgoña

@@ -1,0 +1,113 @@
+/// Televisores: GTIN-14 o sitio:sku si no se emparejó, con atributos del maestro o de la tienda.
+table dim_producto
+	lineageTag: 206dc675-5f91-5a6c-8b30-529d40e3eb34
+
+	column producto_key
+		dataType: string
+		isHidden
+		lineageTag: 9dfbc7bf-2210-5a51-a682-344891aa1f3b
+		summarizeBy: none
+		sourceColumn: producto_key
+
+		annotation SummarizationSetBy = User
+
+	column gtin14
+		dataType: string
+		lineageTag: 15a91786-7043-5d64-8360-83cf0373d9f6
+		summarizeBy: none
+		sourceColumn: gtin14
+
+		annotation SummarizationSetBy = User
+
+	column descripcion
+		dataType: string
+		lineageTag: b95095e7-ad43-5519-b231-40b2f063cbd5
+		summarizeBy: none
+		sourceColumn: descripcion
+
+		annotation SummarizationSetBy = User
+
+	column marca
+		dataType: string
+		lineageTag: 2aedb749-6041-5bf1-8f57-811885eef2c2
+		summarizeBy: none
+		sourceColumn: marca
+
+		annotation SummarizationSetBy = User
+
+	column pulgadas
+		dataType: int64
+		formatString: 0
+		lineageTag: ea4f601b-1785-5ded-9d1a-f2e76c14c73c
+		summarizeBy: none
+		sourceColumn: pulgadas
+
+		annotation SummarizationSetBy = User
+
+	column rango_pulgadas
+		dataType: string
+		lineageTag: 521d946a-9d2d-5d27-908c-2526c7ffda3e
+		summarizeBy: none
+		sourceColumn: rango_pulgadas
+
+		annotation SummarizationSetBy = User
+
+	column referencia
+		dataType: string
+		lineageTag: 66722e3d-9c86-5f12-90f9-a51f25c383cf
+		summarizeBy: none
+		sourceColumn: referencia
+
+		annotation SummarizationSetBy = User
+
+	column tecnologia
+		dataType: string
+		lineageTag: d025fd3a-f604-5697-860d-b013eedcf00f
+		summarizeBy: none
+		sourceColumn: tecnologia
+
+		annotation SummarizationSetBy = User
+
+	column resolucion
+		dataType: string
+		lineageTag: 91321ff0-684c-5672-958b-201479633e30
+		summarizeBy: none
+		sourceColumn: resolucion
+
+		annotation SummarizationSetBy = User
+
+	column en_maestro
+		dataType: boolean
+		lineageTag: 0abc5690-2f3c-5db0-9247-d97f491877cc
+		summarizeBy: none
+		sourceColumn: en_maestro
+
+		annotation SummarizationSetBy = User
+
+	column origen_atributos
+		dataType: string
+		lineageTag: 63fe8452-28e4-55f7-98f4-da7442fbd420
+		summarizeBy: none
+		sourceColumn: origen_atributos
+
+		annotation SummarizationSetBy = User
+
+	column tiene_gtin
+		dataType: boolean
+		lineageTag: 4155bc87-3e96-569e-a6fc-9defe2f4dafb
+		summarizeBy: none
+		sourceColumn: tiene_gtin
+
+		annotation SummarizationSetBy = User
+
+	partition dim_producto = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database(Servidor, BaseDatos),
+				    Vista = Origen{[Schema = "oro", Item = "dim_producto"]}[Data]
+				in
+				    Vista
+
+	annotation PBI_ResultType = Table
+

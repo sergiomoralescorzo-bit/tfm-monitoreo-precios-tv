@@ -1,0 +1,129 @@
+/// Producto × día con al menos 2 cadenas y stock: mínimo, máximo y brecha entre cadenas.
+table kpi_brecha_precio
+	lineageTag: 0e033bed-5699-5a43-adbf-79884c9066d8
+
+	measure 'Productos comparados' = DISTINCTCOUNT ( kpi_brecha_precio[producto_key] )
+		formatString: #,0
+		displayFolder: Brecha entre cadenas
+		lineageTag: 4a5a7ed1-0979-52d0-abbf-dd753374042d
+
+	measure 'Brecha promedio %' = AVERAGE ( kpi_brecha_precio[brecha_pct] )
+		formatString: 0.0%
+		displayFolder: Brecha entre cadenas
+		lineageTag: ca5f844d-8c19-5bb2-9680-8e9c49056c66
+
+	measure 'Brecha máxima %' = MAX ( kpi_brecha_precio[brecha_pct] )
+		formatString: 0.0%
+		displayFolder: Brecha entre cadenas
+		lineageTag: 3b977751-06af-5479-a37c-9acdfb631647
+
+	measure 'Brecha promedio $' = AVERAGE ( kpi_brecha_precio[brecha_abs] )
+		formatString: \$ #,0
+		displayFolder: Brecha entre cadenas
+		lineageTag: 82a739e4-72b9-5c23-81f1-1403562907cd
+
+	measure 'Veces más barata' = COUNTROWS ( kpi_brecha_precio )
+		formatString: #,0
+		displayFolder: Brecha entre cadenas
+		lineageTag: fa82431c-6553-5311-8229-854fb9892a72
+
+	measure 'Brecha último día %' =
+			VAR _fecha = [Última fecha con precio]
+			RETURN
+			    CALCULATE ( MAX ( kpi_brecha_precio[brecha_pct] ), dim_calendario[fecha_key] = _fecha )
+		formatString: 0.0%
+		displayFolder: Brecha entre cadenas
+		lineageTag: ca2b7a14-28c1-5473-b285-44f50981d251
+
+	column fecha_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 879e7eb6-013b-578c-8657-51a1c3273664
+		summarizeBy: none
+		sourceColumn: fecha_key
+
+		annotation SummarizationSetBy = User
+
+	column producto_key
+		dataType: string
+		isHidden
+		lineageTag: 8c331245-b260-54bf-acd7-1aad782270f8
+		summarizeBy: none
+		sourceColumn: producto_key
+
+		annotation SummarizationSetBy = User
+
+	column n_cadenas
+		dataType: int64
+		formatString: 0
+		lineageTag: 7146dad9-42f6-50ec-ab95-3868d5297549
+		summarizeBy: none
+		sourceColumn: n_cadenas
+
+		annotation SummarizationSetBy = User
+
+	column precio_min
+		dataType: int64
+		formatString: \$ #,0
+		lineageTag: eb0accf2-7a01-5037-ab0b-f137393b6c1e
+		summarizeBy: none
+		sourceColumn: precio_min
+
+		annotation SummarizationSetBy = User
+
+	column precio_max
+		dataType: int64
+		formatString: \$ #,0
+		lineageTag: 9c14673f-d2a1-531b-a88f-b61229ff8828
+		summarizeBy: none
+		sourceColumn: precio_max
+
+		annotation SummarizationSetBy = User
+
+	column precio_promedio
+		dataType: int64
+		formatString: \$ #,0
+		lineageTag: 7e18bbe5-cf6d-55f2-996c-e97237b49cb8
+		summarizeBy: none
+		sourceColumn: precio_promedio
+
+		annotation SummarizationSetBy = User
+
+	column cadena_mas_barata
+		dataType: string
+		lineageTag: 9ac33368-5966-52c0-abad-e0673c2346fa
+		summarizeBy: none
+		sourceColumn: cadena_mas_barata
+
+		annotation SummarizationSetBy = User
+
+	column brecha_abs
+		dataType: int64
+		formatString: \$ #,0
+		lineageTag: 8bda9a3b-65be-5135-9ce6-6388429766de
+		summarizeBy: none
+		sourceColumn: brecha_abs
+
+		annotation SummarizationSetBy = User
+
+	column brecha_pct
+		dataType: double
+		formatString: 0.0%
+		lineageTag: 18f6f735-ae33-5be9-8591-215a28196de8
+		summarizeBy: none
+		sourceColumn: brecha_pct
+
+		annotation SummarizationSetBy = User
+
+	partition kpi_brecha_precio = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database(Servidor, BaseDatos),
+				    Vista = Origen{[Schema = "oro", Item = "kpi_brecha_precio"]}[Data]
+				in
+				    Vista
+
+	annotation PBI_ResultType = Table
+

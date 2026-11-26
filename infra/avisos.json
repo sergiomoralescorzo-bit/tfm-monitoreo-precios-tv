@@ -1,0 +1,114 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "description": "Logic App la-tfm-avisos: envía el resumen diario y las alertas comerciales que arma el job del medallón (src/servicios/avisos.py). Reutiliza la conexión office365-tfm de la-tfm-notificaciones."
+  },
+  "parameters": {
+    "correos": { "type": "array", "metadata": { "description": "Destinatarios por defecto (mensajes con 'para' vacío)" } },
+    "teamsWebhook": { "type": "securestring", "defaultValue": "", "metadata": { "description": "Flujo de Teams que publica en el canal. Vacío = solo correo." } },
+    "ubicacion": { "type": "string", "defaultValue": "westus" }
+  },
+  "variables": {
+    "logicApp": "la-tfm-avisos",
+    "conexion": "office365-tfm",
+    "office365Api": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('ubicacion'), 'office365')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "2019-05-01",
+      "name": "[variables('logicApp')]",
+      "location": "[parameters('ubicacion')]",
+      "properties": {
+        "state": "Enabled",
+        "parameters": {
+          "$connections": { "value": { "office365": {
+            "connectionId": "[resourceId('Microsoft.Web/connections', variables('conexion'))]",
+            "connectionName": "[variables('conexion')]",
+            "id": "[variables('office365Api')]" } } },
+          "correos": { "value": "[join(parameters('correos'), ';')]" },
+          "teamsWebhook": { "value": "[parameters('teamsWebhook')]" }
+        },
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "$connections": { "type": "Object", "defaultValue": {} },
+            "correos": { "type": "String", "defaultValue": "" },
+            "teamsWebhook": { "type": "SecureString", "defaultValue": "" }
+          },
+          "triggers": {
+            "manual": {
+              "type": "Request", "kind": "Http",
+              "inputs": { "method": "POST", "schema": {
+                "type": "object",
+                "properties": {
+                  "fecha": { "type": "string" },
+                  "mensajes": { "type": "array", "items": { "type": "object", "properties": {
+                    "tipo": { "type": "string" }, "para": { "type": "string" },
+                    "asunto": { "type": "string" }, "html": { "type": "string" } } } },
+                  "teams": { "type": "object", "properties": { "titulo": { "type": "string" }, "texto": { "type": "string" } } }
+                },
+                "required": [ "mensajes" ] } }
+            }
+          },
+          "actions": {
+            "Para_cada_mensaje": {
+              "type": "Foreach", "runAfter": {},
+              "foreach": "@triggerBody()?['mensajes']",
+              "runtimeConfiguration": { "concurrency": { "repetitions": 1 } },
+              "actions": {
+                "Enviar_correo": {
+                  "type": "ApiConnection",
+                  "inputs": {
+                    "host": { "connection": { "name": "@parameters('$connections')['office365']['connectionId']" } },
+                    "method": "post", "path": "/v2/Mail",
+                    "body": {
+                      "To": "@{if(empty(items('Para_cada_mensaje')?['para']), parameters('correos'), items('Para_cada_mensaje')?['para'])}",
+                      "Subject": "@{items('Para_cada_mensaje')?['asunto']}",
+                      "Body": "@{items('Para_cada_mensaje')?['html']}<p style=\"color:gray;font-size:smaller\">Mensaje automático de la-tfm-avisos (TFM Monitoreo de precios).</p>",
+                      "Importance": "Normal"
+                    }
+                  }
+                }
+              }
+            },
+            "Si_hay_Teams": {
+              "type": "If", "runAfter": {},
+              "expression": { "and": [
+                { "not": { "equals": [ "@parameters('teamsWebhook')", "" ] } },
+                { "not": { "equals": [ "@coalesce(triggerBody()?['teams']?['texto'], '')", "" ] } } ] },
+              "actions": {
+                "Publicar_en_Teams": {
+                  "type": "Http",
+                  "inputs": {
+                    "method": "POST", "uri": "@parameters('teamsWebhook')",
+                    "headers": { "Content-Type": "application/json" },
+                    "body": { "type": "message", "attachments": [ {
+                      "contentType": "application/vnd.microsoft.card.adaptive",
+                      "content": {
+                        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                        "type": "AdaptiveCard", "version": "1.4",
+                        "body": [
+                          { "type": "TextBlock", "size": "Medium", "weight": "Bolder", "wrap": true, "text": "@{triggerBody()?['teams']?['titulo']}" },
+                          { "type": "TextBlock", "wrap": true, "text": "@{triggerBody()?['teams']?['texto']}" } ] } } ] }
+                  }
+                }
+              }
+            },
+            "Responder": {
+              "type": "Response", "kind": "Http",
+              "runAfter": { "Para_cada_mensaje": [ "Succeeded", "Failed", "Skipped", "TimedOut" ],
+                            "Si_hay_Teams": [ "Succeeded", "Failed", "Skipped", "TimedOut" ] },
+              "inputs": { "statusCode": 200, "body": {
+                "correo": "@{actions('Para_cada_mensaje')?['status']}",
+                "teams": "@{actions('Si_hay_Teams')?['status']}" } }
+            }
+          },
+          "outputs": {}
+        }
+      }
+    }
+  ]
+}

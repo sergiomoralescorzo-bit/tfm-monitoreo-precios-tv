@@ -1,0 +1,292 @@
+// Genera el Word del proceso completo del Container Apps Job caj-tfm-medallon: arquitectura, imagen, configuración,
+// ejecución diaria, las tres capas, Python que corre, entradas y salidas, monitoreo y actualización.
+// Uso: node generar_proceso_medallon_word.js <salida.docx>   (lee los PNG de esta misma carpeta)
+const path = require("path");
+const { p, h1, h2, vineta, donde, nota, subtitulo, espacio, numero, codigo, figura, tabla, escribir } = require("./word_comun");
+
+const [, , salida] = process.argv;
+const img = (n) => path.join(__dirname, n);
+
+const contenido = [
+  subtitulo("TFM Monitoreo de precios de televisores · estado al 20-oct-2026"),
+  p("Este documento describe de principio a fin el contenedor del **medallón** (`caj-tfm-medallon`): cómo está armado en Azure, cómo se crea su imagen Docker, cómo se ejecuta cada día, qué hace en cada capa (bronce, plata y oro), qué archivos Python corre y qué deja en el lago. Las rutas de archivos son relativas a `TFM_MonitoreoPrecios/`. El contenedor de captura tiene su propio documento: `docs/Proceso_caj-tfm-captura.docx`."),
+
+  h1("Ficha técnica"),
+  tabla(["Elemento", "Valor"], [
+    ["Recurso de Azure", "Container Apps Job `caj-tfm-medallon`, grupo `RG-TFM-WEBSCRAPING`, West US"],
+    ["Entorno", "`cae-tfm-webscraping` (el mismo de la captura)"],
+    ["Imagen", "`acrtfmwebscraping.azurecr.io/tfm-medallon:0.5`"],
+    ["Receta de la imagen", "`medallon.Dockerfile` · `medallon.Dockerfile.dockerignore` · `requirements-medallon.txt`"],
+    ["Punto de entrada", "`python -m src.nube.tarea_medallon` (`src/nube/tarea_medallon.py`)"],
+    ["Motor", "Spark 3.4.3 en modo local (`local[*]`) con Delta Lake 2.4, dentro del contenedor"],
+    ["Recursos", "2 vCPU · 4 GiB de memoria (3 GB para Spark) · tope de 1 h · sin reintentos"],
+    ["Identidad", "`id-tfm-captura` (la misma de la captura): AcrPull y Storage Blob Data Contributor"],
+    ["Quién lo inicia", "`pl_medallon_diario` (Synapse), llamada por `pl_orquestador_diario` solo si la captura terminó bien"],
+    ["Duración habitual", "≈4 minutos"],
+    ["Lee del lago", "`bronce/aterrizaje/` (crudo, ejecuciones, maestro, revisión), `bronce/conformidad/` y el `_delta_log` de plata y oro"],
+    ["Escribe en el lago", "`bronce/conformidad/`, `plata/`, `oro/` y el resumen `plata/control/medallon/`"],
+    ["Quién usa el resultado", "SQL serverless `tfm_oro` (7 vistas sobre `oro/`) y Power BI"],
+    ["Registros", "Log Analytics `workspace-gmYJ`"],
+  ], [28, 72]),
+  espacio(),
+  nota("El nombre «semanal» es histórico: desde el 19-oct-2026 el medallón corre a diario, encadenado a la captura."),
+
+  // ------------------------------------------------------------------ 1
+  h1("1. Arquitectura"),
+  ...figura(img("med_arquitectura.png"), 335, "Arquitectura de caj-tfm-medallon",
+    "Synapse inicia el job después de la captura; el job corre en cae-tfm-webscraping con la imagen del ACR y la identidad id-tfm-captura; la réplica baja datos del lago, los procesa con Spark local y sube conformidad, plata y oro; SQL serverless lee oro para Power BI.",
+    "Figura 1. Arquitectura del contenedor del medallón."),
+  p("A diferencia de la captura, este contenedor no sale a Internet: solo trabaja con el lago. Baja lo que necesita a su disco, procesa con Spark dentro del mismo contenedor y sube el resultado."),
+  tabla(["Componente", "Papel", "Relación con el job"], [
+    ["`syn-tfm-webscraping`", "Orquesta: lo inicia después de la captura y espera el resultado", "Su identidad tiene el rol Contributor sobre el job"],
+    ["`acrtfmwebscraping`", "Guarda la imagen `tfm-medallon:0.5`", "Azure descarga la imagen de aquí en cada ejecución"],
+    ["`id-tfm-captura`", "Identidad administrada (sin contraseñas)", "AcrPull para la imagen; Storage Blob Data Contributor para el lago"],
+    ["`cae-tfm-webscraping`", "Entorno donde corren los contenedores", "Aporta la máquina (2 vCPU, 4 GiB) mientras dura la réplica"],
+    ["`sttfmwebscraping` / `datalake-tfm`", "Lago de datos (ADLS Gen2)", "Entrada: bronce. Salida: conformidad, plata y oro"],
+    ["SQL serverless `tfm_oro`", "Publica oro como 7 vistas", "No participa en el job: lee las tablas Delta de `oro/` cuando alguien consulta"],
+    ["`workspace-gmYJ`", "Log Analytics", "Recibe los mensajes del Python y de Spark"],
+  ], [26, 30, 44]),
+  espacio(),
+  h2("1.1. Por qué Spark local dentro de un contenedor"),
+  vineta("El área de trabajo de Synapse tiene **0 vCores** de cuota de Spark, así que el pool `sptfm` no puede arrancar. Esta es la **opción B**; la opción A (`pl_medallon_synapse` con el notebook `nb_medallon_semanal`) queda lista por si se aprueba la cuota."),
+  vineta("El volumen es pequeño (miles de filas por día): un Spark local con 2 vCPU lo procesa en unos 4 minutos."),
+  vineta("No lee el lago con `abfss://` directamente: el conector de Hadoop 3.3.4 solo pide el token al servicio de las máquinas virtuales, y Container Apps lo entrega por otra vía (`IDENTITY_ENDPOINT`). Por eso copia los archivos con el SDK de Python, igual que la captura."),
+
+  // ------------------------------------------------------------------ 2
+  h1("2. Creación de la imagen Docker"),
+  ...figura(img("med_despliegue.png"), 260, "Despliegue de la imagen del medallón",
+    "En el PC, Docker construye tfm-medallon:0.5 con medallon.Dockerfile; la imagen se sube a acrtfmwebscraping; el job caj-tfm-medallon apunta a ella.",
+    "Figura 2. Del PC al registro de imágenes, y del registro al job."),
+  h2("2.1. Qué archivos entran (A1)"),
+  p("`medallon.Dockerfile.dockerignore` funciona al revés que el de la captura: **excluye todo** (`*`) y solo deja entrar `requirements-medallon.txt`, `src/__init__.py`, `src/medallon/`, `src/catalogo/` y `src/nube/`. Docker usa este archivo porque se llama igual que el Dockerfile seguido de `.dockerignore`."),
+  h2("2.2. Las instrucciones de medallon.Dockerfile, en orden"),
+  tabla(["#", "Instrucción", "Qué hace", "Por qué"], [
+    ["1", "`FROM python:3.10-slim-bookworm`", "Base liviana: Debian y Python 3.10.", "Spark 3.4 es compatible con Python 3.10, igual que Synapse."],
+    ["2", "`RUN apt-get install openjdk-17-jre-headless procps`", "Instala Java 17.", "Spark corre sobre Java."],
+    ["3", "`COPY requirements-medallon.txt .` y `RUN pip install …`", "Instala `pyspark==3.4.3`, `delta-spark==2.4.0`, `azure-identity` y `azure-storage-file-datalake`.", "Las mismas versiones que `tests_spark` y Synapse Spark 3.4."],
+    ["4", "`RUN python -c \"… urlretrieve …\"`", "Descarga una vez, al construir, `delta-core_2.12-2.4.0.jar` y `delta-storage-2.4.0.jar` y los deja en `pyspark/jars`.", "El contenedor no depende de Internet (Maven) al arrancar."],
+    ["5", "`ENV … TZ=America/Bogota`", "Fija la hora de Colombia y la codificación.", "Igual que en la captura."],
+    ["6", "`RUN useradd --create-home spark`", "Crea el usuario `spark`.", "Para no correr como administrador."],
+    ["7", "`WORKDIR /app` y `COPY src/ src/`", "Copia el código (solo lo que dejó pasar el filtro).", "—"],
+    ["8", "`USER spark`", "Cambia al usuario sin privilegios.", "Seguridad."],
+    ["9", "`ENTRYPOINT [\"python\", \"-m\", \"src.nube.tarea_medallon\"]`", "Define el arranque.", "Es lo único que se ejecuta al encender el contenedor."],
+  ], [5, 33, 34, 28]),
+  espacio(),
+  p("Resultado: una imagen de 1,23 GB (457 MB comprimida)."),
+  h2("2.3. Construir y publicar (A2)"),
+  p("Paso `imagen-medallon` de `infra/desplegar.ps1`, en el PC con Docker Desktop abierto:"),
+  ...codigo([
+    "az acr login -n acrtfmwebscraping",
+    "docker build -f medallon.Dockerfile -t acrtfmwebscraping.azurecr.io/tfm-medallon:0.5 .",
+    "docker push acrtfmwebscraping.azurecr.io/tfm-medallon:0.5",
+  ]),
+  p("La imagen queda en *Registro de contenedor* `acrtfmwebscraping` → *Repositorios* → `tfm-medallon` → `0.5`."),
+
+  // ------------------------------------------------------------------ 3
+  h1("3. Configuración del job (A3)"),
+  donde("Comando: `infra\\desplegar.ps1 -Pasos job-medallon` · Azure: *Container Apps Job* `caj-tfm-medallon` → *Contenedores*"),
+  tabla(["Parámetro", "Valor", "Significado"], [
+    ["`--image`", "`acrtfmwebscraping.azurecr.io/tfm-medallon:0.5`", "Qué imagen usar."],
+    ["`--trigger-type`", "`Manual`", "No tiene horario propio: lo enciende Synapse."],
+    ["`--cpu` / `--memory`", "2 vCPU / 4 GiB", "Tamaño de la máquina."],
+    ["`--replica-timeout`", "3600 s (1 h)", "Si tarda más, Azure la detiene."],
+    ["`--replica-retry-limit`", "0", "Si falla, no la reintenta."],
+    ["`--parallelism` / `--replica-completion-count`", "1 / 1", "Una sola réplica por ejecución."],
+    ["`--mi-user-assigned`, `--registry-identity`", "`id-tfm-captura`", "La misma identidad de la captura (creada en el paso `job`)."],
+    ["`--env-vars`", "`TFM_ADLS_CUENTA=sttfmwebscraping`, `TFM_ADLS_CONTENEDOR=datalake-tfm`, `AZURE_CLIENT_ID=…`, `TFM_SPARK_MEMORIA=3g`", "Lago de destino, identidad y memoria del driver de Spark."],
+  ], [30, 34, 36]),
+  espacio(),
+
+  // ------------------------------------------------------------------ 4
+  h1("4. Ejecución diaria, paso a paso"),
+  ...figura(img("med_ejecucion.png"), 397, "Ejecución diaria del medallón",
+    "Synapse pide iniciar el job; Azure crea la réplica; tarea_medallon crea Spark local, baja datos del lago, ejecuta conformidad, plata y oro, sube los cambios y deja un resumen; Azure destruye la réplica y Synapse ve el estado.",
+    "Figura 3. De la orden de Synapse a la destrucción del contenedor."),
+
+  h2("B1. Synapse enciende el job"),
+  donde("Archivos: `synapse/pipelines/pl_orquestador_diario.json`, `synapse/pipelines/pl_medallon_diario.json`"),
+  p("Cuando `pl_captura_diaria` termina en Succeeded, `pl_orquestador_diario` llama a `pl_medallon_diario`. Si la captura falla, el medallón no corre ese día."),
+  tabla(["Actividad", "Qué hace"], [
+    ["`Iniciar medallon`", "`POST https://management.azure.com/…/jobs/caj-tfm-medallon/start` con la identidad de Synapse. Hasta 2 reintentos."],
+    ["`Guardar ejecucion`", "Guarda el nombre de la ejecución que devuelve Azure."],
+    ["`Esperar fin`", "Cada 60 s consulta `GET …/executions/{nombre}` hasta que el estado deje de ser Running. Tope de 1 h 15 min."],
+    ["`Verificar resultado`", "Si el estado final no es Succeeded, termina con `MEDALLON_FALLIDO`."],
+    ["`Avisar fallo - …`", "Si cualquier actividad falla, llama a `pl_notificar_fallo` (correo y Teams) y deja la pipeline en Failed."],
+  ], [26, 74]),
+  espacio(),
+
+  h2("B2. Azure crea la réplica"),
+  p("Container Apps toma una máquina de `cae-tfm-webscraping`, descarga `tfm-medallon:0.5` con `id-tfm-captura` y la enciende."),
+
+  h2("B3. Arranca src/nube/tarea_medallon.py"),
+  p("El ENTRYPOINT ejecuta `python -m src.nube.tarea_medallon`. Este archivo dirige la corrida:"),
+  ...codigo([
+    "spark = sesion_spark()                  # Spark local[*], 3 GB, extensiones de Delta",
+    "raiz = tempfile.mkdtemp(...)            # carpeta temporal /tmp/tfm_medallon_xxxx",
+    "bajar(destino, raiz, sitios)            # copia del lago lo que Spark va a leer",
+    "antes = huella(raiz)                    # fecha de cada archivo de salida antes de procesar",
+    "semanal.ejecutar(spark, raiz, sitios)   # ◀── conformidad → plata → oro (sección 5)",
+    "subir(destino, raiz, antes)             # sube solo lo nuevo o modificado",
+    "destino.subir(resumen, \"plata/control/medallon/medallon_{fecha}.json\")",
+    "spark.stop()                            # return 0",
+  ]),
+  p("**Qué baja (`bajar`)**:"),
+  vineta("de cada sitio, `bronce/aterrizaje/{sitio}/crudo/` y `bronce/aterrizaje/{sitio}/ejecuciones/`;"),
+  vineta("`bronce/aterrizaje/maestro/` (maestro de televisores) y `bronce/aterrizaje/revision/` (decisiones del equipo);"),
+  vineta("las tablas Delta de `bronce/conformidad/` completas, porque la carga es incremental y necesita saber qué ya se cargó;"),
+  vineta("de `plata/` y `oro/`, solo la carpeta `_delta_log`, porque esas capas se reescriben completas y solo hace falta el historial de versiones."),
+  p("No baja `bronce/aterrizaje/{sitio}/capturas/` (la evidencia .gz), porque pesa mucho y el medallón no la lee.", { spacing: { before: 120, after: 120 } }),
+
+  h2("B4. semanal.py procesa las tres capas"),
+  p("`src/medallon/semanal.py` fija la zona horaria de Spark en UTC y ejecuta, en orden, `conformidad.cargar`, `plata.construir` y `oro.construir`, midiendo el tiempo de cada una. El detalle está en la sección 5."),
+
+  h2("B5. Subida al lago"),
+  p("`subir()` compara la huella de antes y después y sube solo los archivos **nuevos o modificados** de `bronce/conformidad`, `plata` y `oro`, sin los `.crc` que crea Hadoop. El orden importa: **primero los archivos de datos y al final los de `_delta_log`**, en orden de versión. Así, nadie que consulte el lago (por ejemplo, SQL serverless) ve una versión que apunte a archivos que aún no se han subido."),
+  p("Al final escribe un resumen JSON con los tiempos y los conteos de cada paso en `plata/control/medallon/medallon_{AAAAMMDD_HHMMSS}.json`."),
+
+  h2("B6. Fin y limpieza"),
+  vineta("Si todo salió bien, el proceso termina con código 0. Si Spark o la subida fallan, termina con error y Azure marca la ejecución como **Failed**."),
+  vineta("Azure destruye la réplica: el disco temporal desaparece."),
+  vineta("`Esperar fin` ve el estado final y el orquestador termina. Desde ese momento, las vistas de `tfm_oro` y Power BI muestran los datos del día."),
+
+  // ------------------------------------------------------------------ 5
+  h1("5. Las tres capas del medallón"),
+  ...figura(img("med_capas.png"), 291, "Capas del medallón",
+    "conformidad.py pasa los CSV y JSON de aterrizaje a tablas Delta sin transformar; plata.py tipa, deduplica, empareja y marca atípicos; oro.py arma el modelo estrella y los indicadores.",
+    "Figura 4. Qué lee y qué escribe cada paso de semanal.py."),
+
+  h2("5.1. Paso 1: bronce/conformidad (conformidad.py)"),
+  p("Convierte los archivos de la zona de aterrizaje en tablas Delta **sin transformar los datos**: todas las columnas quedan como texto, igual que en el archivo."),
+  tabla(["Lee", "Escribe (Delta)", "Cómo"], [
+    ["`bronce/aterrizaje/{sitio}/crudo/*/*/*/productos_*.csv`", "`bronce/conformidad/{sitio}/productos`", "CSV con separador `;`, UTF-8"],
+    ["`bronce/aterrizaje/{sitio}/ejecuciones/ejecucion_*.json`", "`bronce/conformidad/{sitio}/ejecuciones`", "Un objeto JSON por archivo"],
+    ["`bronce/aterrizaje/maestro/televisores/*.csv`", "`bronce/conformidad/maestro/televisores`", "Se reemplaza en cada corrida"],
+  ], [40, 34, 26]),
+  espacio(),
+  p("Agrega columnas de control: `_archivo_origen` (ruta del archivo en el lago, para la trazabilidad), `_fecha_carga` y, en productos y ejecuciones, `fecha` (partición AAAA-MM-DD, tomada de la carpeta o del nombre del archivo)."),
+  p("**Carga incremental** (productos y ejecuciones): compara `_archivo_origen` con lo ya cargado y solo agrega los archivos nuevos (`append`). Un archivo nunca se carga dos veces. El maestro, en cambio, se sobrescribe completo en cada corrida."),
+
+  h2("5.2. Paso 2: plata (plata.py)"),
+  p("Se **reconstruye completa** en cada corrida desde conformidad: el volumen es pequeño y así el resultado no depende de corridas anteriores. En orden:"),
+  numero("**Maestro:** lee el maestro de televisores y se queda con los que están en alcance.", "plata"),
+  numero("**Tipos:** convierte fechas, precios (`precio_lista`, `precio_venta`, `stock`) y booleanos (`disponible`, `en_alcance`, `es_vendedor_propio`).", "plata"),
+  numero("**Reprocesos:** si una tabla de productos se reprocesó (`productos_…_rN.csv`), usa solo la última versión.", "plata"),
+  numero("**Deduplicación:** una fila por corrida, sitio, ficha y vendedor.", "plata"),
+  numero("**Marcas de calidad:** `completo` (tiene EAN o SKU, precio y título) y `comparable` (OK o SIN_STOCK, en alcance y con precio).", "plata"),
+  numero("**Emparejamiento** (`src/catalogo/emparejamiento.py`): nivel 1 por **EAN** (GTIN-14 válido); nivel 2 por **REFERENCIA** (misma marca, pulgadas y referencia que un producto con GTIN conocido); si no, **SIN_EMPAREJAR**.", "plata"),
+  numero("**Revisión manual:** aplica las decisiones del equipo de `bronce/aterrizaje/revision/*.csv`: CONFIRMAR (se mantiene), CORREGIR (se asigna el GTIN indicado, método MANUAL) o RECHAZAR (queda SIN_EMPAREJAR). Luego calcula `producto_key`: el GTIN-14 o, si no hay, `sitio:sku_tienda`.", "plata"),
+  numero("**Precios atípicos** (`src/medallon/atipicos.py`): agrega `motivos_atipico` por producto, sitio y día (reglas en la tabla).", "plata"),
+  numero("**Escritura:** guarda las 4 tablas Delta (sobrescritura completa).", "plata"),
+  espacio(),
+  tabla(["Motivo atípico", "Regla"], [
+    ["`SIN_PRECIO` / `BAJO_RANGO` / `SOBRE_RANGO`", "Precio de venta ≤ 0, menor que $200.000 o mayor que $80.000.000"],
+    ["`VENTA_MAYOR_QUE_LISTA`", "Precio de venta mayor que el de lista"],
+    ["`DESCUENTO_EXCESIVO`", "Más del 70 % de descuento sobre el precio de lista"],
+    ["`LEJOS_DE_OTRAS_CADENAS`", "Con stock, fuera de [mediana/2, mediana×2] de al menos otras 2 cadenas con stock ese día"],
+    ["`CAMBIO_BRUSCO`", "Con stock, más del 50 % de variación frente al día anterior con stock en el mismo sitio (desde la imagen 0.5)"],
+  ], [38, 62]),
+  espacio(),
+  tabla(["Tabla de plata", "Contenido"], [
+    ["`plata/precios/ofertas`", "Ofertas tipadas, deduplicadas, clasificadas, emparejadas y con motivos atípicos. Particionada por `fecha_col`."],
+    ["`plata/precios/revision_emparejamiento`", "Ofertas comparables emparejadas por REFERENCIA, MANUAL o SIN_EMPAREJAR (la última de cada sitio y SKU): lista de trabajo para la revisión del equipo."],
+    ["`plata/catalogo/productos`", "Un registro por `producto_key`, con los atributos del maestro (si el GTIN está en él) o de la tienda."],
+    ["`plata/control/ejecuciones`", "Registro de ejecuciones de la captura, tipado."],
+  ], [34, 66]),
+  espacio(),
+
+  h2("5.3. Paso 3: oro (oro.py)"),
+  p("Arma el **modelo estrella** y las tablas de indicadores a partir de plata. Se **reconstruye completo** en cada corrida."),
+  tabla(["Tabla de oro", "Grano", "Contenido"], [
+    ["`dimensiones/dim_producto`", "Un producto", "`producto_key` (GTIN-14 o `sitio:sku`) y atributos: marca, pulgadas, referencia, tecnología, resolución"],
+    ["`dimensiones/dim_tienda`", "Un sitio", "`tienda_key` fija, sitio y cadena (Alkosto y Ktronix son la misma cadena)"],
+    ["`dimensiones/dim_calendario`", "Un día", "`fecha_key` AAAAMMDD, del primer al último día con datos, con mes y día en español"],
+    ["`hechos/fact_precio_diario`", "Producto × tienda × día", "La **última** captura del día: precios, descuento, disponibilidad, stock, método de emparejamiento, ruta de la evidencia y motivos atípicos"],
+    ["`hechos/fact_ejecucion`", "Corrida × sitio", "Duración, modo, conteos (descubiertos, consultados, OK, errores, bloqueos) y estado"],
+    ["`kpis/kpi_brecha_precio`", "Producto × día con ≥ 2 cadenas", "Precio de cada cadena (el menor de sus sitios), mínimo, máximo, brecha y cadena más barata"],
+    ["`kpis/kpi_calidad_captura`", "Sitio × día (última corrida)", "Registros, completitud, ofertas con stock y porcentaje de emparejamiento (por EAN, por referencia, sin emparejar)"],
+  ], [30, 22, 48]),
+  espacio(),
+  p("Las 7 vistas de la base de datos `tfm_oro` en SQL serverless (`synapse/sql/02_vistas_oro.sql`) leen estas tablas con `OPENROWSET(… FORMAT='DELTA')`. No copian datos: apenas termina el medallón, Power BI ve los datos nuevos."),
+
+  // ------------------------------------------------------------------ 6
+  h1("6. Archivos Python que se ejecutan"),
+  p("El contenedor ejecuta un solo archivo, el del ENTRYPOINT; ese archivo importa a los demás:"),
+  ...codigo([
+    "src/nube/tarea_medallon.py             ← ARRANCA AQUÍ: Spark local, baja, procesa, sube",
+    "├── src/nube/lago.py                   ← baja del lago y sube el resultado",
+    "├── src/medallon/rutas.py              ← lista de sitios y rutas de cada capa",
+    "└── src/medallon/semanal.py            ← ejecuta las 3 capas en orden",
+    "    ├── 1. src/medallon/conformidad.py ← CSV → Delta sin transformar",
+    "    ├── 2. src/medallon/plata.py       ← tipa, deduplica, clasifica y empareja",
+    "    │      ├── src/catalogo/emparejamiento.py  ← regla EAN → referencia",
+    "    │      │   ├── src/catalogo/atributos_tv.py",
+    "    │      │   └── src/catalogo/gtin.py",
+    "    │      ├── src/catalogo/atributos_tv.py",
+    "    │      └── src/medallon/atipicos.py        ← marca los precios atípicos",
+    "    └── 3. src/medallon/oro.py         ← modelo estrella e indicadores",
+  ]),
+  tabla(["Archivo", "Qué hace"], [
+    ["`src/nube/tarea_medallon.py`", "Punto de entrada: crea la sesión de Spark, baja los datos, llama a `semanal.py`, sube los cambios en orden seguro y escribe el resumen."],
+    ["`src/nube/lago.py`", "Conexión al lago con `DefaultAzureCredential`: listar, bajar y subir archivos."],
+    ["`src/medallon/rutas.py`", "Lista de los 5 sitios y rutas de cada tabla en el lago."],
+    ["`src/medallon/semanal.py`", "Encadena conformidad → plata → oro y mide el tiempo de cada paso."],
+    ["`src/medallon/conformidad.py`", "Bronce: CSV y JSON a Delta, con metadatos y carga incremental."],
+    ["`src/medallon/plata.py`", "Plata: tipos, reprocesos, deduplicación, emparejamiento, revisión manual, atípicos y catálogo."],
+    ["`src/medallon/atipicos.py`", "Reglas de precios atípicos (también las usa la validación de la Etapa 6)."],
+    ["`src/medallon/oro.py`", "Oro: dimensiones, hechos e indicadores."],
+    ["`src/catalogo/emparejamiento.py`", "Regla de emparejamiento por EAN y por referencia."],
+    ["`src/catalogo/atributos_tv.py`, `gtin.py`", "Atributos del televisor desde el título y normalización a GTIN-14."],
+  ], [32, 68]),
+  espacio(),
+  p("**Copiados pero que no se ejecutan aquí:** `src/catalogo/construir_maestro.py` y, de `src/nube/`, todo menos `tarea_medallon.py` y `lago.py`. La imagen **no** contiene `src/extraccion/`."),
+  nota("Detalle técnico: lago.py importa src/extraccion/modelos.py solo dentro de una función que el medallón nunca llama. Por eso la imagen funciona sin src/extraccion/."),
+
+  // ------------------------------------------------------------------ 7
+  h1("7. Entradas y salidas en el lago"),
+  donde("Cuenta `sttfmwebscraping`, contenedor `datalake-tfm`"),
+  tabla(["Sentido", "Ruta en el lago", "Tipo", "Modo"], [
+    ["Lee", "`bronce/aterrizaje/{sitio}/crudo/` y `ejecuciones/`", "CSV / JSON", "Lo que dejó la captura"],
+    ["Lee", "`bronce/aterrizaje/maestro/televisores/`", "CSV", "Maestro de televisores"],
+    ["Lee", "`bronce/aterrizaje/revision/`", "CSV", "Decisiones de revisión del equipo"],
+    ["Lee y escribe", "`bronce/conformidad/{sitio}/productos`, `…/ejecuciones`, `…/maestro/televisores`", "Delta", "Incremental (agrega); el maestro se reemplaza"],
+    ["Escribe", "`plata/precios/…`, `plata/catalogo/productos`, `plata/control/ejecuciones`", "Delta", "Sobrescritura completa"],
+    ["Escribe", "`oro/dimensiones/…`, `oro/hechos/…`, `oro/kpis/…`", "Delta", "Sobrescritura completa"],
+    ["Escribe", "`plata/control/medallon/medallon_{fecha}.json`", "JSON", "Un resumen por corrida"],
+  ], [14, 46, 14, 26]),
+  espacio(),
+
+  // ------------------------------------------------------------------ 8
+  h1("8. Monitoreo y fallos"),
+  vineta("**Estado de cada ejecución:** *Container Apps Job* `caj-tfm-medallon` → *Historial de ejecuciones*."),
+  vineta("**Mensajes** (archivos bajados y subidos, conteos de cada capa): en la ejecución → *Registros* (Log Analytics `workspace-gmYJ`)."),
+  vineta("**Resumen de la corrida:** `plata/control/medallon/medallon_{fecha}.json`, con los segundos y las filas de cada paso."),
+  vineta("**Si falla:** `pl_medallon_diario` llama a `pl_notificar_fallo` (correo y Teams). Oro conserva los datos del día anterior, porque `_delta_log` se sube al final."),
+  vineta("**Si no corre** (por ejemplo, porque falló la captura): la Logic App `la-tfm-vigilancia` avisa a las 09:30."),
+
+  // ------------------------------------------------------------------ 9
+  h1("9. Probar y actualizar"),
+  h2("9.1. Probar la imagen en el PC"),
+  p("Con una carpeta que imite el lago (misma estructura de `bronce/aterrizaje/`):"),
+  ...codigo(["docker run --rm -v \"<carpeta lago>:/lago\" tfm-medallon:0.5 --lago-local /lago"]),
+  p("Opciones de `tarea_medallon.py`: `--sitios`, `--lago-local <carpeta>` y `--datos <carpeta de trabajo>`. Las pruebas automáticas de Spark están en `tests_spark/`."),
+  h2("9.2. Publicar un cambio"),
+  p("Cualquier cambio en `src/medallon/`, `src/catalogo/`, `src/nube/`, `requirements-medallon.txt` o `medallon.Dockerfile` requiere una imagen nueva:"),
+  numero("subir la versión con `-VersionMedallon` (por ejemplo, 0.6);", "pub"),
+  numero("ejecutar `infra\\desplegar.ps1 -Pasos imagen-medallon,job-medallon -VersionMedallon 0.6`;", "pub"),
+  numero("desde la siguiente corrida, el job usa la imagen nueva. Como plata y oro se reconstruyen completos, el cambio se aplica a toda la serie histórica.", "pub"),
+  p("Si cambia `src/catalogo/` hay que reconstruir **también** la imagen de captura, porque ambas lo incluyen.", { spacing: { before: 120, after: 120 } }),
+
+  // ------------------------------------------------------------------ resumen
+  h1("Resumen: dónde está cada cosa"),
+  tabla(["Qué", "Dónde", "Cuánto dura"], [
+    ["Código fuente", "PC: `TFM_MonitoreoPrecios/src/medallon/`, `src/catalogo/`, `src/nube/`", "Permanente (fuente de verdad)"],
+    ["Imagen con el código", "ACR `acrtfmwebscraping` → `tfm-medallon:0.5` → `/app/`", "Permanente, hasta que se borre"],
+    ["Configuración del job", "Container Apps Job `caj-tfm-medallon`", "Permanente"],
+    ["Contenedor en ejecución", "Réplica en `cae-tfm-webscraping`", "≈4 min por día"],
+    ["Copia de trabajo y Spark", "`/tmp/tfm_medallon_…` de la réplica", "Se borra al terminar"],
+    ["Resultados", "`datalake-tfm` → `bronce/conformidad/`, `plata/`, `oro/`", "Permanentes"],
+    ["Consulta", "SQL serverless `tfm_oro` (7 vistas) → Power BI", "Siempre muestra la última versión de oro"],
+  ], [26, 46, 28]),
+];
+
+escribir(salida, "Proceso del contenedor caj-tfm-medallon", contenido);

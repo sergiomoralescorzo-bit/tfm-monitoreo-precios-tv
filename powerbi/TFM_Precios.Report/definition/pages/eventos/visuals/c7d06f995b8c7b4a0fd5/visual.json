@@ -1,0 +1,211 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.7.0/schema.json",
+  "name": "c7d06f995b8c7b4a0fd5",
+  "position": {
+    "x": 24,
+    "y": 474,
+    "z": 22000,
+    "height": 222,
+    "width": 1232,
+    "tabOrder": 22000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "drillFilterOtherVisuals": true,
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_calendario"
+                    }
+                  },
+                  "Property": "fecha"
+                }
+              },
+              "queryRef": "dim_calendario.fecha",
+              "nativeQueryRef": "fecha",
+              "displayName": "Fecha"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_evento_comercial"
+                    }
+                  },
+                  "Property": "tipo_evento"
+                }
+              },
+              "queryRef": "fact_evento_comercial.tipo_evento",
+              "nativeQueryRef": "tipo_evento",
+              "displayName": "Evento"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_tienda"
+                    }
+                  },
+                  "Property": "tienda"
+                }
+              },
+              "queryRef": "dim_tienda.tienda",
+              "nativeQueryRef": "tienda",
+              "displayName": "Tienda"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_producto"
+                    }
+                  },
+                  "Property": "marca"
+                }
+              },
+              "queryRef": "dim_producto.marca",
+              "nativeQueryRef": "marca",
+              "displayName": "Marca"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_producto"
+                    }
+                  },
+                  "Property": "referencia"
+                }
+              },
+              "queryRef": "dim_producto.referencia",
+              "nativeQueryRef": "referencia",
+              "displayName": "Referencia"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_evento_comercial"
+                    }
+                  },
+                  "Property": "precio_anterior"
+                }
+              },
+              "queryRef": "fact_evento_comercial.precio_anterior",
+              "nativeQueryRef": "precio_anterior",
+              "displayName": "Antes"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_evento_comercial"
+                    }
+                  },
+                  "Property": "precio_actual"
+                }
+              },
+              "queryRef": "fact_evento_comercial.precio_actual",
+              "nativeQueryRef": "precio_actual",
+              "displayName": "Ahora"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_evento_comercial"
+                    }
+                  },
+                  "Property": "variacion_pct"
+                }
+              },
+              "queryRef": "fact_evento_comercial.variacion_pct",
+              "nativeQueryRef": "variacion_pct",
+              "displayName": "Variación"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_evento_comercial"
+                    }
+                  },
+                  "Property": "revisar_atipico"
+                }
+              },
+              "queryRef": "fact_evento_comercial.revisar_atipico",
+              "nativeQueryRef": "revisar_atipico",
+              "displayName": "Revisar (atípico)"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_evento_comercial"
+                    }
+                  },
+                  "Property": "url"
+                }
+              },
+              "queryRef": "fact_evento_comercial.url",
+              "nativeQueryRef": "url",
+              "displayName": "Página"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_evento_comercial"
+                    }
+                  },
+                  "Property": "Eventos"
+                }
+              },
+              "queryRef": "fact_evento_comercial.Eventos",
+              "nativeQueryRef": "Eventos",
+              "displayName": "Eventos"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Detalle de los eventos'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

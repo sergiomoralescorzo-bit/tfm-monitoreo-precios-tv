@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "TFM_Precios"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "f0e9d119-7fa6-4e8d-99df-863cde31163f"
+  }
+}

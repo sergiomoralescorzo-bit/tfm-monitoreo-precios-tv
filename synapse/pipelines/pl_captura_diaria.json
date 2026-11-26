@@ -1,0 +1,381 @@
+{
+  "name": "pl_captura_diaria",
+  "properties": {
+    "description": "Inicia el Container Apps Job de captura y espera a que termine. El modo (completo los domingos, seguimiento los demás días) lo decide el contenedor.",
+    "variables": {
+      "ejecucion": {
+        "type": "String"
+      },
+      "estado": {
+        "type": "String",
+        "defaultValue": "Running"
+      }
+    },
+    "activities": [
+      {
+        "name": "Iniciar captura",
+        "type": "WebActivity",
+        "policy": {
+          "timeout": "0.00:05:00",
+          "retry": 2,
+          "retryIntervalInSeconds": 60
+        },
+        "typeProperties": {
+          "method": "POST",
+          "url": "https://management.azure.com/subscriptions/__SUSCRIPCION__/resourceGroups/__GRUPO__/providers/Microsoft.App/jobs/__JOB__/start?api-version=2024-03-01",
+          "body": "{}",
+          "disableAsyncPattern": true,
+          "authentication": {
+            "type": "MSI",
+            "resource": "https://management.azure.com/"
+          }
+        }
+      },
+      {
+        "name": "Guardar ejecucion",
+        "type": "SetVariable",
+        "dependsOn": [
+          {
+            "activity": "Iniciar captura",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "variableName": "ejecucion",
+          "value": {
+            "value": "@activity('Iniciar captura').output.name",
+            "type": "Expression"
+          }
+        }
+      },
+      {
+        "name": "Esperar fin",
+        "type": "Until",
+        "dependsOn": [
+          {
+            "activity": "Guardar ejecucion",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "expression": {
+            "value": "@not(equals(variables('estado'), 'Running'))",
+            "type": "Expression"
+          },
+          "timeout": "0.02:30:00",
+          "activities": [
+            {
+              "name": "Pausa",
+              "type": "Wait",
+              "typeProperties": {
+                "waitTimeInSeconds": 120
+              }
+            },
+            {
+              "name": "Consultar ejecucion",
+              "type": "WebActivity",
+              "dependsOn": [
+                {
+                  "activity": "Pausa",
+                  "dependencyConditions": [
+                    "Succeeded"
+                  ]
+                }
+              ],
+              "policy": {
+                "timeout": "0.00:02:00",
+                "retry": 2,
+                "retryIntervalInSeconds": 30
+              },
+              "typeProperties": {
+                "method": "GET",
+                "url": {
+                  "value": "@concat('https://management.azure.com/subscriptions/__SUSCRIPCION__/resourceGroups/__GRUPO__/providers/Microsoft.App/jobs/__JOB__/executions/', variables('ejecucion'), '?api-version=2024-03-01')",
+                  "type": "Expression"
+                },
+                "authentication": {
+                  "type": "MSI",
+                  "resource": "https://management.azure.com/"
+                }
+              }
+            },
+            {
+              "name": "Actualizar estado",
+              "type": "SetVariable",
+              "dependsOn": [
+                {
+                  "activity": "Consultar ejecucion",
+                  "dependencyConditions": [
+                    "Succeeded"
+                  ]
+                }
+              ],
+              "typeProperties": {
+                "variableName": "estado",
+                "value": {
+                  "value": "@if(contains(createArray('Running', 'Processing', 'Unknown'), activity('Consultar ejecucion').output.properties.status), 'Running', activity('Consultar ejecucion').output.properties.status)",
+                  "type": "Expression"
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "Verificar resultado",
+        "type": "IfCondition",
+        "dependsOn": [
+          {
+            "activity": "Esperar fin",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "expression": {
+            "value": "@not(equals(variables('estado'), 'Succeeded'))",
+            "type": "Expression"
+          },
+          "ifTrueActivities": [
+            {
+              "name": "Captura fallida",
+              "type": "Fail",
+              "typeProperties": {
+                "message": {
+                  "value": "@concat('La ejecución ', variables('ejecucion'), ' terminó en estado ', variables('estado'))",
+                  "type": "Expression"
+                },
+                "errorCode": "CAPTURA_FALLIDA"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "Avisar fallo - Iniciar captura",
+        "type": "ExecutePipeline",
+        "dependsOn": [
+          {
+            "activity": "Iniciar captura",
+            "dependencyConditions": [
+              "Failed"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "pipeline": {
+            "referenceName": "pl_notificar_fallo",
+            "type": "PipelineReference"
+          },
+          "waitOnCompletion": true,
+          "parameters": {
+            "pipeline": {
+              "value": "@pipeline().Pipeline",
+              "type": "Expression"
+            },
+            "ejecucion": {
+              "value": "@pipeline().RunId",
+              "type": "Expression"
+            },
+            "actividad": "Iniciar captura",
+            "error": {
+              "value": "@activity('Iniciar captura').error.message",
+              "type": "Expression"
+            }
+          }
+        }
+      },
+      {
+        "name": "Fallo - Iniciar captura",
+        "type": "Fail",
+        "description": "Deja la pipeline en Failed aunque el aviso se haya enviado (si no, la rama de fallo la daría por exitosa).",
+        "dependsOn": [
+          {
+            "activity": "Avisar fallo - Iniciar captura",
+            "dependencyConditions": [
+              "Succeeded",
+              "Failed"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "message": {
+            "value": "@activity('Iniciar captura').error.message",
+            "type": "Expression"
+          },
+          "errorCode": "PIPELINE_FALLIDA"
+        }
+      },
+      {
+        "name": "Avisar fallo - Guardar ejecucion",
+        "type": "ExecutePipeline",
+        "dependsOn": [
+          {
+            "activity": "Guardar ejecucion",
+            "dependencyConditions": [
+              "Failed"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "pipeline": {
+            "referenceName": "pl_notificar_fallo",
+            "type": "PipelineReference"
+          },
+          "waitOnCompletion": true,
+          "parameters": {
+            "pipeline": {
+              "value": "@pipeline().Pipeline",
+              "type": "Expression"
+            },
+            "ejecucion": {
+              "value": "@pipeline().RunId",
+              "type": "Expression"
+            },
+            "actividad": "Guardar ejecucion",
+            "error": {
+              "value": "@activity('Guardar ejecucion').error.message",
+              "type": "Expression"
+            }
+          }
+        }
+      },
+      {
+        "name": "Fallo - Guardar ejecucion",
+        "type": "Fail",
+        "description": "Deja la pipeline en Failed aunque el aviso se haya enviado (si no, la rama de fallo la daría por exitosa).",
+        "dependsOn": [
+          {
+            "activity": "Avisar fallo - Guardar ejecucion",
+            "dependencyConditions": [
+              "Succeeded",
+              "Failed"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "message": {
+            "value": "@activity('Guardar ejecucion').error.message",
+            "type": "Expression"
+          },
+          "errorCode": "PIPELINE_FALLIDA"
+        }
+      },
+      {
+        "name": "Avisar fallo - Esperar fin",
+        "type": "ExecutePipeline",
+        "dependsOn": [
+          {
+            "activity": "Esperar fin",
+            "dependencyConditions": [
+              "Failed"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "pipeline": {
+            "referenceName": "pl_notificar_fallo",
+            "type": "PipelineReference"
+          },
+          "waitOnCompletion": true,
+          "parameters": {
+            "pipeline": {
+              "value": "@pipeline().Pipeline",
+              "type": "Expression"
+            },
+            "ejecucion": {
+              "value": "@pipeline().RunId",
+              "type": "Expression"
+            },
+            "actividad": "Esperar fin",
+            "error": {
+              "value": "@activity('Esperar fin').error.message",
+              "type": "Expression"
+            }
+          }
+        }
+      },
+      {
+        "name": "Fallo - Esperar fin",
+        "type": "Fail",
+        "description": "Deja la pipeline en Failed aunque el aviso se haya enviado (si no, la rama de fallo la daría por exitosa).",
+        "dependsOn": [
+          {
+            "activity": "Avisar fallo - Esperar fin",
+            "dependencyConditions": [
+              "Succeeded",
+              "Failed"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "message": {
+            "value": "@activity('Esperar fin').error.message",
+            "type": "Expression"
+          },
+          "errorCode": "PIPELINE_FALLIDA"
+        }
+      },
+      {
+        "name": "Avisar fallo - Verificar resultado",
+        "type": "ExecutePipeline",
+        "dependsOn": [
+          {
+            "activity": "Verificar resultado",
+            "dependencyConditions": [
+              "Failed"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "pipeline": {
+            "referenceName": "pl_notificar_fallo",
+            "type": "PipelineReference"
+          },
+          "waitOnCompletion": true,
+          "parameters": {
+            "pipeline": {
+              "value": "@pipeline().Pipeline",
+              "type": "Expression"
+            },
+            "ejecucion": {
+              "value": "@pipeline().RunId",
+              "type": "Expression"
+            },
+            "actividad": "Verificar resultado",
+            "error": {
+              "value": "@activity('Verificar resultado').error.message",
+              "type": "Expression"
+            }
+          }
+        }
+      },
+      {
+        "name": "Fallo - Verificar resultado",
+        "type": "Fail",
+        "description": "Deja la pipeline en Failed aunque el aviso se haya enviado (si no, la rama de fallo la daría por exitosa).",
+        "dependsOn": [
+          {
+            "activity": "Avisar fallo - Verificar resultado",
+            "dependencyConditions": [
+              "Succeeded",
+              "Failed"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "message": {
+            "value": "@activity('Verificar resultado').error.message",
+            "type": "Expression"
+          },
+          "errorCode": "PIPELINE_FALLIDA"
+        }
+      }
+    ]
+  }
+}

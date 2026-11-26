@@ -1,0 +1,12 @@
+/// Endpoint de Synapse SQL serverless (Etapa 4).
+expression Servidor = "syn-tfm-webscraping-ondemand.sql.azuresynapse.net" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+	lineageTag: 3b48027a-845e-5e5a-90e0-4f8581f15e4f
+
+	annotation PBI_ResultType = Text
+
+/// Base de datos con las vistas del modelo estrella (esquema oro).
+expression BaseDatos = "tfm_oro" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+	lineageTag: d803efc2-94c8-5d50-936a-f78c631e4cd1
+
+	annotation PBI_ResultType = Text
+

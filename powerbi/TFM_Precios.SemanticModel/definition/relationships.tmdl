@@ -1,0 +1,48 @@
+relationship 911467fe-a2d3-5d90-ad64-c1b1509b5779
+	fromColumn: fact_precio_diario.fecha_key
+	toColumn: dim_calendario.fecha_key
+
+relationship bbd958d0-a134-53be-bcb3-4d9e6c765472
+	fromColumn: fact_precio_diario.producto_key
+	toColumn: dim_producto.producto_key
+
+relationship 56939e19-66b2-5e7f-a7fd-362bcc151f1d
+	fromColumn: fact_precio_diario.tienda_key
+	toColumn: dim_tienda.tienda_key
+
+relationship b6244219-9231-58c3-965f-29decedb6432
+	fromColumn: fact_ejecucion.fecha_key
+	toColumn: dim_calendario.fecha_key
+
+relationship 5e7fe567-cd31-5f13-a6af-0df40fca934d
+	fromColumn: fact_ejecucion.tienda_key
+	toColumn: dim_tienda.tienda_key
+
+relationship f4aaa2d3-4f33-5c6f-872a-923bd3ef8e8a
+	fromColumn: kpi_brecha_precio.fecha_key
+	toColumn: dim_calendario.fecha_key
+
+relationship 7bb0fa6c-7dbd-5747-87c0-cf5d4c6797ef
+	fromColumn: kpi_brecha_precio.producto_key
+	toColumn: dim_producto.producto_key
+
+relationship 90ba3739-6777-5a4d-a6fe-a6de234e25e4
+	fromColumn: kpi_calidad_captura.fecha_key
+	toColumn: dim_calendario.fecha_key
+
+relationship 54ee9452-57f5-5135-83c2-ffbb2cd032f7
+	fromColumn: kpi_calidad_captura.tienda_key
+	toColumn: dim_tienda.tienda_key
+
+relationship 1f058cca-c4ee-5fae-8b51-b15c4e1c1f6d
+	fromColumn: fact_evento_comercial.fecha_key
+	toColumn: dim_calendario.fecha_key
+
+relationship fc034e94-ff76-51d4-b984-f3ad3f9d3da7
+	fromColumn: fact_evento_comercial.producto_key
+	toColumn: dim_producto.producto_key
+
+relationship ff438dab-0477-5072-89e2-591d8e0193cb
+	fromColumn: fact_evento_comercial.tienda_key
+	toColumn: dim_tienda.tienda_key
+

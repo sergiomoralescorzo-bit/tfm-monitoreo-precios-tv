@@ -1,0 +1,13 @@
+# Imagen del Container Apps Job (Etapa 3). La versión de Playwright debe coincidir con la imagen base.
+pyyaml>=6.0
+httpx>=0.27
+beautifulsoup4>=4.12
+lxml>=5.0
+pydantic>=2.7
+playwright==1.63.0
+tzdata>=2024.1
+azure-identity>=1.17
+azure-storage-file-datalake>=12.16
+# Éxito con Scrapling (16-nov-2026). Si cambia la imagen base, patchright debe tener su misma versión.
+scrapling[fetchers]==0.5.1
+patchright==1.63.0      # misma versión que la imagen base (chromium-1243 ya instalado)

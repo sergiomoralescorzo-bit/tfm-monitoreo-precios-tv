@@ -1,0 +1,10 @@
+# Contexto de medallon.Dockerfile: solo el código del medallón y la sincronización con el lago.
+*
+!requirements-medallon.txt
+!src/__init__.py
+!src/medallon/
+!src/catalogo/
+!src/nube/
+!src/servicios/
+!config/servicios.yaml
+**/__pycache__/

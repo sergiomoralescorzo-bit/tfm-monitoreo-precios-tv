@@ -1,0 +1,137 @@
+{
+  "name": "pl_orquestador_diario",
+  "properties": {
+    "description": "Secuencia diaria (decisión del equipo, 19-oct-2026): captura y luego medallón. Desde el 12-nov-2026 el medallón corre aunque la captura falle. Desde el 19-nov-2026 (decisión del grupo) cada etapa se reintenta hasta 2 veces, 20 minutos después de cada fallo: la captura solo repite los sitios que no tienen una ejecución EXITOSA o PARCIAL ese día (src/nube/tarea.py). Cada intento fallido avisa por pl_notificar_fallo. 'Resultado final' deja esta pipeline en Failed si la captura o el medallón siguen fallando después del último intento.",
+    "variables": {
+      "intentos_captura": { "type": "Array", "defaultValue": [] },
+      "captura_ok": { "type": "Boolean", "defaultValue": false },
+      "intentos_medallon": { "type": "Array", "defaultValue": [] },
+      "medallon_ok": { "type": "Boolean", "defaultValue": false }
+    },
+    "activities": [
+      {
+        "name": "Captura con reintentos",
+        "type": "Until",
+        "dependsOn": [],
+        "typeProperties": {
+          "expression": {
+            "value": "@or(variables('captura_ok'), greaterOrEquals(length(variables('intentos_captura')), 3))",
+            "type": "Expression"
+          },
+          "timeout": "0.09:00:00",
+          "activities": [
+            {
+              "name": "Contar intento de captura",
+              "type": "AppendVariable",
+              "dependsOn": [],
+              "typeProperties": { "variableName": "intentos_captura", "value": "intento" }
+            },
+            {
+              "name": "Captura",
+              "type": "ExecutePipeline",
+              "dependsOn": [ { "activity": "Contar intento de captura", "dependencyConditions": [ "Succeeded" ] } ],
+              "typeProperties": {
+                "pipeline": { "referenceName": "pl_captura_diaria", "type": "PipelineReference" },
+                "waitOnCompletion": true
+              }
+            },
+            {
+              "name": "Captura terminada",
+              "type": "SetVariable",
+              "dependsOn": [ { "activity": "Captura", "dependencyConditions": [ "Succeeded" ] } ],
+              "typeProperties": { "variableName": "captura_ok", "value": true }
+            },
+            {
+              "name": "Esperar para reintentar captura",
+              "type": "IfCondition",
+              "dependsOn": [ { "activity": "Captura", "dependencyConditions": [ "Failed" ] } ],
+              "typeProperties": {
+                "expression": {
+                  "value": "@less(length(variables('intentos_captura')), 3)",
+                  "type": "Expression"
+                },
+                "ifTrueActivities": [
+                  { "name": "Pausa de 20 min (captura)", "type": "Wait", "typeProperties": { "waitTimeInSeconds": 1200 } }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "Medallon con reintentos",
+        "type": "Until",
+        "dependsOn": [ { "activity": "Captura con reintentos", "dependencyConditions": [ "Completed" ] } ],
+        "typeProperties": {
+          "expression": {
+            "value": "@or(variables('medallon_ok'), greaterOrEquals(length(variables('intentos_medallon')), 3))",
+            "type": "Expression"
+          },
+          "timeout": "0.03:00:00",
+          "activities": [
+            {
+              "name": "Contar intento de medallon",
+              "type": "AppendVariable",
+              "dependsOn": [],
+              "typeProperties": { "variableName": "intentos_medallon", "value": "intento" }
+            },
+            {
+              "name": "Medallon",
+              "type": "ExecutePipeline",
+              "dependsOn": [ { "activity": "Contar intento de medallon", "dependencyConditions": [ "Succeeded" ] } ],
+              "typeProperties": {
+                "pipeline": { "referenceName": "pl_medallon_diario", "type": "PipelineReference" },
+                "waitOnCompletion": true
+              }
+            },
+            {
+              "name": "Medallon terminado",
+              "type": "SetVariable",
+              "dependsOn": [ { "activity": "Medallon", "dependencyConditions": [ "Succeeded" ] } ],
+              "typeProperties": { "variableName": "medallon_ok", "value": true }
+            },
+            {
+              "name": "Esperar para reintentar medallon",
+              "type": "IfCondition",
+              "dependsOn": [ { "activity": "Medallon", "dependencyConditions": [ "Failed" ] } ],
+              "typeProperties": {
+                "expression": {
+                  "value": "@less(length(variables('intentos_medallon')), 3)",
+                  "type": "Expression"
+                },
+                "ifTrueActivities": [
+                  { "name": "Pausa de 20 min (medallon)", "type": "Wait", "typeProperties": { "waitTimeInSeconds": 1200 } }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "Resultado final",
+        "type": "IfCondition",
+        "dependsOn": [ { "activity": "Medallon con reintentos", "dependencyConditions": [ "Completed" ] } ],
+        "typeProperties": {
+          "expression": {
+            "value": "@and(variables('captura_ok'), variables('medallon_ok'))",
+            "type": "Expression"
+          },
+          "ifFalseActivities": [
+            {
+              "name": "Fallo despues de los reintentos",
+              "type": "Fail",
+              "typeProperties": {
+                "message": {
+                  "value": "@concat('Después de los reintentos: captura ', if(variables('captura_ok'), 'OK', 'fallida'), ' (', string(length(variables('intentos_captura'))), ' ', if(equals(length(variables('intentos_captura')), 1), 'intento', 'intentos'), ') y medallón ', if(variables('medallon_ok'), 'OK', 'fallido'), ' (', string(length(variables('intentos_medallon'))), ' ', if(equals(length(variables('intentos_medallon')), 1), 'intento', 'intentos'), '). Si la captura falló, el medallón se ejecutó con los sitios que sí subieron datos. Ver los avisos de cada intento.')",
+                  "type": "Expression"
+                },
+                "errorCode": "FalloTrasReintentos"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "annotations": [ "TFM" ]
+  }
+}

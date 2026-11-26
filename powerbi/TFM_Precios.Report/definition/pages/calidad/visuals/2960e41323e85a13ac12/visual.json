@@ -1,0 +1,211 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.7.0/schema.json",
+  "name": "2960e41323e85a13ac12",
+  "position": {
+    "x": 24,
+    "y": 474,
+    "z": 22000,
+    "height": 222,
+    "width": 1232,
+    "tabOrder": 22000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "drillFilterOtherVisuals": true,
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_calendario"
+                    }
+                  },
+                  "Property": "fecha"
+                }
+              },
+              "queryRef": "dim_calendario.fecha",
+              "nativeQueryRef": "fecha",
+              "displayName": "Fecha"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_tienda"
+                    }
+                  },
+                  "Property": "tienda"
+                }
+              },
+              "queryRef": "dim_tienda.tienda",
+              "nativeQueryRef": "tienda",
+              "displayName": "Tienda"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_ejecucion"
+                    }
+                  },
+                  "Property": "id_ejecucion"
+                }
+              },
+              "queryRef": "fact_ejecucion.id_ejecucion",
+              "nativeQueryRef": "id_ejecucion",
+              "displayName": "Ejecución"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_ejecucion"
+                    }
+                  },
+                  "Property": "modo"
+                }
+              },
+              "queryRef": "fact_ejecucion.modo",
+              "nativeQueryRef": "modo",
+              "displayName": "Modo"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_ejecucion"
+                    }
+                  },
+                  "Property": "estado"
+                }
+              },
+              "queryRef": "fact_ejecucion.estado",
+              "nativeQueryRef": "estado",
+              "displayName": "Estado"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_ejecucion"
+                    }
+                  },
+                  "Property": "duracion_s"
+                }
+              },
+              "queryRef": "fact_ejecucion.duracion_s",
+              "nativeQueryRef": "duracion_s",
+              "displayName": "Duración (s)"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_ejecucion"
+                    }
+                  },
+                  "Property": "registros"
+                }
+              },
+              "queryRef": "fact_ejecucion.registros",
+              "nativeQueryRef": "registros",
+              "displayName": "Registros"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_ejecucion"
+                    }
+                  },
+                  "Property": "ok"
+                }
+              },
+              "queryRef": "fact_ejecucion.ok",
+              "nativeQueryRef": "ok",
+              "displayName": "OK"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_ejecucion"
+                    }
+                  },
+                  "Property": "sin_stock"
+                }
+              },
+              "queryRef": "fact_ejecucion.sin_stock",
+              "nativeQueryRef": "sin_stock",
+              "displayName": "Sin stock"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_ejecucion"
+                    }
+                  },
+                  "Property": "errores"
+                }
+              },
+              "queryRef": "fact_ejecucion.errores",
+              "nativeQueryRef": "errores",
+              "displayName": "Errores"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fact_ejecucion"
+                    }
+                  },
+                  "Property": "bloqueados"
+                }
+              },
+              "queryRef": "fact_ejecucion.bloqueados",
+              "nativeQueryRef": "bloqueados",
+              "displayName": "Bloqueos"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Detalle de ejecuciones'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

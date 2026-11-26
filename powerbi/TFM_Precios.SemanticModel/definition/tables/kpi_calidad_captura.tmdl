@@ -1,0 +1,152 @@
+/// Tienda × día (última corrida): completitud y emparejamiento (Etapa 1, sección 10).
+table kpi_calidad_captura
+	lineageTag: 60e6027b-7229-58bd-82ac-bfb6921fec92
+
+	measure 'Emparejamiento %' = DIVIDE ( SUM ( kpi_calidad_captura[emparejadas] ), SUM ( kpi_calidad_captura[ofertas_con_stock] ) )
+		formatString: 0.0%
+		displayFolder: Calidad
+		lineageTag: 0097f953-48cc-5f2a-adfb-f7b2b739aaa3
+
+	measure 'Completitud %' =
+			DIVIDE (
+			    SUMX ( kpi_calidad_captura, kpi_calidad_captura[completitud_pct] * kpi_calidad_captura[registros_con_datos] ),
+			    SUM ( kpi_calidad_captura[registros_con_datos] )
+			)
+		formatString: 0.0%
+		displayFolder: Calidad
+		lineageTag: fa584674-aecc-5b31-b452-3376d131e133
+
+	measure 'Registros capturados' = SUM ( kpi_calidad_captura[registros] )
+		formatString: #,0
+		displayFolder: Calidad
+		lineageTag: cd2c8fb2-a0c2-536f-8c47-98a6d2f81076
+
+	column fecha_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: ade8d94c-a553-5421-a2e0-801d1152c0e8
+		summarizeBy: none
+		sourceColumn: fecha_key
+
+		annotation SummarizationSetBy = User
+
+	column tienda_key
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 33610069-f99d-5e3d-8a15-51a9e5d6e8e4
+		summarizeBy: none
+		sourceColumn: tienda_key
+
+		annotation SummarizationSetBy = User
+
+	column id_ejecucion
+		dataType: string
+		lineageTag: 78d3cad9-aa9b-59de-b514-f391abe76629
+		summarizeBy: none
+		sourceColumn: id_ejecucion
+
+		annotation SummarizationSetBy = User
+
+	column registros
+		dataType: int64
+		formatString: 0
+		lineageTag: bedb53b3-e825-5869-9613-39daec7ca878
+		summarizeBy: sum
+		sourceColumn: registros
+
+		annotation SummarizationSetBy = User
+
+	column registros_con_datos
+		dataType: int64
+		formatString: 0
+		lineageTag: c9300d84-8104-5f0b-8541-84ac8f54aecb
+		summarizeBy: sum
+		sourceColumn: registros_con_datos
+
+		annotation SummarizationSetBy = User
+
+	column tv_en_alcance
+		dataType: int64
+		formatString: 0
+		lineageTag: 924e95d5-5164-5e6f-ba44-05c1c61cb72b
+		summarizeBy: sum
+		sourceColumn: tv_en_alcance
+
+		annotation SummarizationSetBy = User
+
+	column completitud_pct
+		dataType: double
+		formatString: 0.0%
+		lineageTag: 20e4ab3e-12c2-59b8-8d88-bd17e552a06a
+		summarizeBy: none
+		sourceColumn: completitud_pct
+
+		annotation SummarizationSetBy = User
+
+	column ofertas_con_stock
+		dataType: int64
+		formatString: 0
+		lineageTag: e43dd798-932a-5590-9f54-07db368bb43b
+		summarizeBy: sum
+		sourceColumn: ofertas_con_stock
+
+		annotation SummarizationSetBy = User
+
+	column por_ean
+		dataType: int64
+		formatString: 0
+		lineageTag: 06ba4c26-e7f5-55ff-bcf9-8213ddfe4a80
+		summarizeBy: sum
+		sourceColumn: por_ean
+
+		annotation SummarizationSetBy = User
+
+	column por_referencia
+		dataType: int64
+		formatString: 0
+		lineageTag: eaefb47a-a0b4-5c44-95e1-4eb00361415b
+		summarizeBy: sum
+		sourceColumn: por_referencia
+
+		annotation SummarizationSetBy = User
+
+	column sin_emparejar
+		dataType: int64
+		formatString: 0
+		lineageTag: ec8d43c4-7fa5-5037-bcc6-da637ec54b7d
+		summarizeBy: sum
+		sourceColumn: sin_emparejar
+
+		annotation SummarizationSetBy = User
+
+	column emparejadas
+		dataType: int64
+		formatString: 0
+		lineageTag: 2c6f62a7-0612-539f-85c9-0279b5134e37
+		summarizeBy: sum
+		sourceColumn: emparejadas
+
+		annotation SummarizationSetBy = User
+
+	column emparejamiento_pct
+		dataType: double
+		formatString: 0.0%
+		lineageTag: 1a8afbef-58a3-5fbf-a8e7-060b3969e664
+		summarizeBy: none
+		sourceColumn: emparejamiento_pct
+
+		annotation SummarizationSetBy = User
+
+	partition kpi_calidad_captura = m
+		mode: import
+		source =
+				let
+				    Origen = Sql.Database(Servidor, BaseDatos),
+				    Vista = Origen{[Schema = "oro", Item = "kpi_calidad_captura"]}[Data]
+				in
+				    Vista
+
+	annotation PBI_ResultType = Table
+

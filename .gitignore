@@ -1,0 +1,28 @@
+# Entorno y cachés de Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+*.env
+
+# Datos: nada de lo capturado ni el maestro de televisores entra al repositorio
+# (protección de contenidos, apartado 4.3 de la memoria). Las pruebas usan sus
+# propios fragmentos en tests/.
+data/
+archivo/*/data/
+
+# Power BI: configuración local y caché del modelo (contiene datos importados)
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+
+# Documentos internos del equipo (bitácora de desarrollo, revisiones y consultas al director)
+BITACORA.md
+docs/R1_*.md
+docs/R2_*.md
+
+# Archivos temporales de Office y del sistema
+~$*
+*.tmp
+Thumbs.db
+desktop.ini

@@ -1,0 +1,22 @@
+# Ejemplo de suscripciones a las alertas comerciales y al resumen diario.
+# El archivo real NO va en el repositorio (tiene correos, datos personales: memoria, subapartado 4.5.2).
+# Se sube al lago en bronce/aterrizaje/suscripciones/suscripciones.yaml, por ejemplo con:
+#   az storage fs file upload -f datalake-tfm --account-name sttfmwebscraping --auth-mode login \
+#     -s suscripciones.yaml -p bronce/aterrizaje/suscripciones/suscripciones.yaml --overwrite
+#
+# resumen: true            recibe el resumen diario (por defecto, true)
+# alertas:                 si falta, no recibe alertas individuales. Cada lista vacía u omitida = todas.
+#   tipos:     CAMBIO_PRECIO, AGOTADO, FIN_PROMOCION, PRODUCTO_NUEVO, DESCUENTO_SIN_RESPALDO
+#   marcas:    como en dim_producto (SAMSUNG, LG, HISENSE, TCL, ...)
+#   productos: producto_key (GTIN-14) o referencia del fabricante
+#   tiendas:   alkosto, ktronix, jumbo, olimpica, exito
+suscripciones:
+  - nombre: Analista de ejemplo
+    correo: analista@ejemplo.com
+    resumen: true
+    alertas:
+      tipos: [CAMBIO_PRECIO, DESCUENTO_SIN_RESPALDO, FIN_PROMOCION]
+      marcas: [SAMSUNG, LG]
+  - nombre: Solo resumen
+    correo: gerencia@ejemplo.com
+    resumen: true
