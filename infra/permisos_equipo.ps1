@@ -8,16 +8,18 @@
 #
 # El ámbito es el grupo de recursos, no la suscripción: así no se da control sobre el crédito de Azure for Students.
 param(
-    [Parameter(Mandatory)] [string[]]$Usuarios   # correos de Entra ID de los integrantes, p. ej. -Usuarios a@dominio,b@dominio
+    [Parameter(Mandatory)] [string[]]$Usuarios,   # correos de Entra ID de los integrantes, p. ej. -Usuarios a@dominio,b@dominio
+    [string]$Grupo   = "RG-TFM-WEBSCRAPING",
+    [string]$Synapse = "syn-tfm-webscraping",
+    [string]$Cuenta  = "sttfmwebscraping",
+    [string]$CarpetaAzCli = "$env:ProgramFiles\Microsoft SDKs\Azure\CLI2\wbin"   # se usa solo si az no está en el PATH
 )
 $ErrorActionPreference = "Stop"
-$cli = "C:\Program Files\Microsoft SDKs\Azure\CLI2\wbin"
+$cli = $CarpetaAzCli
 if (-not (Get-Command az -ErrorAction SilentlyContinue) -and (Test-Path $cli)) { $env:PATH = "$cli;$env:PATH" }
 
-$Grupo   = "RG-TFM-WEBSCRAPING"
-$Synapse = "syn-tfm-webscraping"
 $rg      = az group show -n $Grupo --query id -o tsv
-$lago    = az storage account show -n sttfmwebscraping -g $Grupo --query id -o tsv
+$lago    = az storage account show -n $Cuenta -g $Grupo --query id -o tsv
 
 foreach ($u in $Usuarios) {
     $id = az ad user show --id $u --query id -o tsv

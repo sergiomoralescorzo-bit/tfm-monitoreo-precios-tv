@@ -1,7 +1,7 @@
 # Imagen del medallón (Etapa 3, opción B): Spark 3.4 + Delta 2.4 en modo local, igual a tests_spark y al
 # runtime de Synapse. Corre en el Container Apps Job `caj-tfm-medallon` (ver src/nube/tarea_medallon.py).
-# Construir:  docker build -f medallon.Dockerfile -t tfm-medallon:0.2 .
-# Probar:     docker run --rm -v "<carpeta lago>:/lago" tfm-medallon:0.2 --lago-local /lago
+# Construir:  docker build -f medallon.Dockerfile -t tfm-medallon:0.8 .
+# Probar:     docker run --rm -v "<carpeta lago>:/lago" tfm-medallon:0.8 --lago-local /lago
 FROM python:3.10-slim-bookworm
 
 RUN apt-get update && apt-get install -y --no-install-recommends openjdk-17-jre-headless procps \

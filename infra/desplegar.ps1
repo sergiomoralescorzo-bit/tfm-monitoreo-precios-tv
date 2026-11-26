@@ -15,27 +15,30 @@ param(
     [string[]]$Pasos = @("acr", "imagen", "imagen-medallon", "entorno", "job", "job-medallon", "roles", "pool", "lago", "notificaciones", "avisos", "synapse", "vigilancia"),
     [string]$Version = "0.7",
     [string]$VersionMedallon = "0.8",
-    [string[]]$Correos = @("$env:TFM_CORREOS_AVISO")   # correos de aviso separados por comas (parámetro o variable de entorno)
+    [string[]]$Correos = @("$env:TFM_CORREOS_AVISO"),   # correos de aviso separados por comas (parámetro o variable de entorno)
+    # Nombres de los recursos de Azure. Los valores por defecto son los del despliegue del TFM; quien despliegue
+    # en otra suscripción los cambia aquí o al llamar el script (p. ej. -Grupo RG-OTRO -Acr acrotro).
+    [string]$Grupo       = "RG-TFM-WEBSCRAPING",
+    [string]$Region      = "westus",
+    [string]$Synapse     = "syn-tfm-webscraping",
+    [string]$Cuenta      = "sttfmwebscraping",
+    [string]$Contenedor  = "datalake-tfm",
+    [string]$Acr         = "acrtfmwebscraping",        # nombre global único: si ya existe en otra suscripción, cambiarlo
+    [string]$Entorno     = "cae-tfm-webscraping",
+    [string]$Job         = "caj-tfm-captura",
+    [string]$JobMedallon = "caj-tfm-medallon",          # Spark local (opción B de la sección 9.2 de la Etapa 3)
+    [string]$Identidad   = "id-tfm-captura",            # identidad asignada por el usuario del job (AcrPull + lago)
+    [string]$Pool        = "sptfm",
+    [string]$CarpetaAzCli = "$env:ProgramFiles\Microsoft SDKs\Azure\CLI2\wbin"   # se usa solo si az no está en el PATH
 )
 
 $ErrorActionPreference = "Continue"   # en PS 5.1 las advertencias de az en stderr serían errores; se valida $LASTEXITCODE
 $Pasos = $Pasos -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ }   # -File pasa "a,b" como un texto
-$Grupo       = "RG-TFM-WEBSCRAPING"
-$Region      = "westus"
-$Synapse     = "syn-tfm-webscraping"
-$Cuenta      = "sttfmwebscraping"
-$Contenedor  = "datalake-tfm"
-$Acr         = "acrtfmwebscraping"        # nombre global único: si ya existe en otra suscripción, cambiarlo
-$Entorno     = "cae-tfm-webscraping"
-$Job         = "caj-tfm-captura"
-$JobMedallon = "caj-tfm-medallon"          # Spark local (opción B de la sección 9.2 de la Etapa 3)
-$Identidad   = "id-tfm-captura"            # identidad asignada por el usuario del job (AcrPull + lago)
-$Pool        = "sptfm"
 $Imagen      = "$Acr.azurecr.io/tfm-captura:$Version"
 $ImagenMedallon = "$Acr.azurecr.io/tfm-medallon:$VersionMedallon"
 $Proyecto    = Split-Path -Parent $PSScriptRoot
 
-$cli = "C:\Program Files\Microsoft SDKs\Azure\CLI2\wbin"
+$cli = $CarpetaAzCli
 if (-not (Get-Command az -ErrorAction SilentlyContinue) -and (Test-Path $cli)) { $env:PATH = "$cli;$env:PATH" }
 
 function AzOk { & az.cmd @args; if ($LASTEXITCODE -ne 0) { throw "Falló: az $args" } }
@@ -229,7 +232,7 @@ if (Paso "synapse") {
 
 if (Paso "vigilancia") {
     Write-Host "== Vigilancia diaria de ejecuciones (Logic App la-tfm-vigilancia, 09:30 de Colombia)" -ForegroundColor Cyan
-    # Avisa por la-tfm-notificaciones si la captura (y el domingo el medallón) no terminó bien: cubre que no se ejecute.
+    # Avisa por la-tfm-notificaciones si la captura (y el medallón) no terminó bien: cubre que no se ejecute.
     $urlAviso = az rest --method post -o tsv --query value `
         --uri "https://management.azure.com/subscriptions/$suscripcion/resourceGroups/$Grupo/providers/Microsoft.Logic/workflows/la-tfm-notificaciones/triggers/manual/listCallbackUrl?api-version=2019-05-01"
     if (-not $urlAviso) { throw "Falta la Logic App la-tfm-notificaciones: ejecute primero el paso notificaciones" }

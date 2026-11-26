@@ -1,4 +1,6 @@
 // Genera el Word del proceso completo del Container Apps Job caj-tfm-medallon: arquitectura, imagen, configuración,
+// Refleja el estado al 20-oct-2026 (imágenes tfm-captura:0.4 y tfm-medallon:0.5, captura con 1 vCPU y 2 GiB). Las versiones vigentes
+// son tfm-captura:0.7 y tfm-medallon:0.8 (infra/desplegar.ps1). El Word generado se conserva como registro de esa fecha.
 // ejecución diaria, las tres capas, Python que corre, entradas y salidas, monitoreo y actualización.
 // Uso: node generar_proceso_medallon_word.js <salida.docx>   (lee los PNG de esta misma carpeta)
 const path = require("path");

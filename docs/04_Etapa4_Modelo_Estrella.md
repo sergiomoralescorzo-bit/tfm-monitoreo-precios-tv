@@ -30,7 +30,7 @@ flowchart LR
         V["BD tfm_oro, esquema oro<br/>7 vistas OPENROWSET FORMAT='DELTA'"]
     end
     PBI["Power BI Desktop / Service<br/>modo Importación"]
-    MED["caj-tfm-medallon<br/>(Etapa 3, semanal)"] -->|reescribe| ORO
+    MED["caj-tfm-medallon<br/>(Etapa 3, diario)"] -->|reescribe| ORO
     ORO --> DS --> V -->|Entra ID| PBI
 ```
 

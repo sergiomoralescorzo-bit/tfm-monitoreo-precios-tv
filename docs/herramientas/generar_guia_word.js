@@ -1,4 +1,6 @@
 // Genera la guía de revisión del TFM en Word.
+// Refleja el estado al 19-oct-2026 (imágenes tfm-captura:0.4 y tfm-medallon:0.5, captura con 1 vCPU y 2 GiB). Las versiones vigentes
+// son tfm-captura:0.7 y tfm-medallon:0.8 (infra/desplegar.ps1). El Word generado se conserva como registro de esa fecha.
 const fs = require("fs");
 const {
   Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType,

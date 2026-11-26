@@ -126,7 +126,7 @@ En el listado de Éxito, la propia página llama a sus servicios internos (`/api
 | Olímpica | 176 | 229 | 6,2 min | EXITOSA | 0 / 0 |
 | Éxito | 460 (50 páginas de 13 listados) | 461 + 50 páginas | 19,3 min | EXITOSA | 0 / 0 |
 
-Como los sitios corren en paralelo, **una corrida completa dura lo que tarda el sitio más lento: unos 19 minutos**, muy por debajo de la meta de 60 minutos del RNF-01, y deja margen para la transformación. Bronze ocupó 103 MB comprimidos (Alkosto 43, Ktronix 42, Éxito 15, Olímpica 2, Jumbo 0,7).
+Como los sitios corren en paralelo, **una corrida completa dura lo que tarda el sitio más lento: unos 19 minutos**, muy por debajo de la meta de 60 minutos que tenía entonces el RNF-01 (desde el 19-nov es de 150 minutos, ver Etapa 1, sección 7.2), y deja margen para la transformación. Bronze ocupó 103 MB comprimidos (Alkosto 43, Ktronix 42, Éxito 15, Olímpica 2, Jumbo 0,7).
 
 Los 26 y 27 `NO_ENCONTRADO` de Alkosto y Ktronix son fichas retiradas que siguen en el sitemap y redirigen a la categoría o al inicio. Se registran, pero no son fallas.
 

@@ -4,6 +4,14 @@
 **Objetivo específico que cubre:** *Implementar la orquestación de la captura y la transformación de los datos en una arquitectura medallón (bronce, plata y oro) sobre Azure.*
 **Requerimientos que atiende (Etapa 1):** RF-03, RF-04, RF-05, RF-06, RF-07, RNF-01, RNF-04, RNF-05, RNF-07.
 
+> **Estado vigente (26-nov-2026).** Este documento registra las decisiones en el orden en que se tomaron, y cada versión de imagen que menciona es la de su fecha. Hoy rige lo siguiente:
+>
+> - Un disparador diario (06:00) lanza `pl_orquestador_diario`, que encadena la captura y el medallón.
+> - El medallón corre **a diario desde el 19-oct** (antes, los domingos).
+> - Las imágenes en uso son `tfm-captura:0.7` (2 vCPU y 4 GiB desde la 0.6) y `tfm-medallon:0.8`.
+> - Éxito se captura con Scrapling desde el 16-nov.
+> - La meta del RNF-01 es de 150 minutos desde el 19-nov.
+
 ---
 
 ## 1. Entregables
@@ -65,7 +73,7 @@ flowchart LR
 | ACR Basic o GitHub Container Registry | **ACR Basic** | Decisión del equipo: la identidad administrada del job descarga la imagen sin credenciales guardadas. |
 | Contenedores `bronze/`, `silver/`, `gold/`… | **Un contenedor** `datalake-tfm` con carpetas `bronce/`, `plata/`, `oro/` y `codigo/` | Estructura definida por el equipo; la zona de aterrizaje se separa de la conformidad dentro de bronce. |
 | Spark en el pool de Synapse | **Spark 3.4 en modo local dentro de un Container Apps Job** (`caj-tfm-medallon`) | La cuota de vCores de Spark del área de trabajo es 0 (sección 9). Se usa el mismo código `src/medallon` y el mismo runtime (Spark 3.4, Delta 2.4); el notebook y el pool quedan para la opción A. |
-| Spark diario | **Spark semanal**; la captura sigue siendo diaria | El Spark pool es lo que más consume del crédito (RNF-07). Plata y oro se reconstruyen cada semana con todos los días capturados, así que no se pierde ningún precio diario: solo cambia la frescura de los tableros. |
+| Spark diario | **Spark semanal**; la captura sigue siendo diaria (desde el 19-oct el medallón corre a diario, ver sección 6) | El Spark pool es lo que más consume del crédito (RNF-07). Plata y oro se reconstruyen cada semana con todos los días capturados, así que no se pierde ningún precio diario: solo cambia la frescura de los tableros. |
 
 ## 3. Captura en Azure Container Apps Job
 
@@ -160,7 +168,7 @@ Las vistas de Synapse SQL serverless sobre estas tablas son parte de la Etapa 4.
 | `pl_medallon_synapse` | Opción A: ejecuta `nb_medallon_semanal` en el pool `sptfm`. El notebook carga `codigo/tfm_src.zip` y llama a `semanal.ejecutar`. Solo funciona si se aprueba la cuota de Spark. | Ninguna (alternativa) |
 
 - **Disparador (por decisión del equipo; activo desde el 17-oct-2026):**
-  - Desde el 19-oct, un solo disparador, `tr_orquestador_diario`, inicia todos los días a las 06:00 de Colombia (`SA Pacific Standard Time`) la secuencia captura → medallón. Así oro se actualiza cada día, unos 30 a 40 minutos después de las 06:00.
+  - Desde el 19-oct, un solo disparador, `tr_orquestador_diario`, inicia todos los días a las 06:00 de Colombia (`SA Pacific Standard Time`) la secuencia captura → medallón. Así oro se actualiza cada día, unos 30 a 40 minutos después de las 06:00 (desde el 16-nov, con Éxito en Scrapling, unas dos horas después).
   - Reemplaza a `tr_captura_diaria` (diario, 06:00) y `tr_medallon_semanal` (domingos, 08:00), que se retiraron de Synapse y del repositorio.
   - Costo del medallón diario: 2 vCPU durante unos 4 min al día, dentro de la capa gratuita de Container Apps, más unas 500 actividades de orquestación al mes (del orden de USD 0,5).
   - El 18-oct no corrió nada porque el `startTime` coincidía con la primera hora programada (sección 9.7).
@@ -238,7 +246,7 @@ Synapse, el registro y el job están en West US; la cuenta de almacenamiento, en
 | Éxito | EXITOSA | 465 | 438 | 27 | 0 | 274 | 25,1 min | 15,6 MB |
 
 - **Sin bloqueos ni errores** desde la IP de Azure. Las cifras son casi iguales a las de la corrida local del 13-oct.
-- **RNF-01 (captura < 60 min): se cumple** (32 min). Éxito sigue siendo el sitio más lento: tarda 25 min con 1 vCPU, frente a 19 en local.
+- **RNF-01 (captura < 60 min, meta vigente entonces): se cumple** (32 min). Éxito sigue siendo el sitio más lento: tarda 25 min con 1 vCPU, frente a 19 en local.
 - El estado (`ultimo_estado.json`) quedó guardado en los cinco sitios, así que las próximas corridas de seguimiento no tendrán que volver a descubrir.
 
 **Hallazgo: la cuota de Spark del área de trabajo es 0.** El dato de 12 vCores anotado en el despliegue no corresponde al límite que aplica Synapse. Por eso el medallón no se ha podido ejecutar en Azure. Las opciones están en la sección 9.2.

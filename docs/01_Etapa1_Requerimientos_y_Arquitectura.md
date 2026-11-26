@@ -7,6 +7,18 @@
 |---|---|
 | 0.1 | Primer alcance: iPhone en cinco cadenas (archivado en `archivo/iphone/`) |
 | 0.2 | Categoría Televisores, cuatro cadenas, alternativa por referencia del fabricante y universo de productos como unión de las cadenas ([Anexo A2](anexos/A2_viabilidad_televisores.md)) |
+| 0.3 | Notas de estado vigente (26-nov-2026): Scrapling en Éxito, RNF-01 a 150 min, orquestación con pipelines de Synapse y medallón diario con Spark local. El texto original se conserva y cada cambio se anota donde aplica |
+
+> **Estado vigente (26-nov-2026).** Este documento fija los requerimientos y la arquitectura de partida. Durante el desarrollo cambiaron cuatro decisiones, anotadas en su sección:
+>
+> | Tema | Decisión de la Etapa 1 | Estado vigente | Dónde se explica |
+> |---|---|---|---|
+> | Bloqueos de los sitios | No se intenta superar ningún bloqueo | Desde el 16-nov, Éxito se captura con Scrapling, que resuelve el desafío de Cloudflare. Sin proxies ni rotación de identidades | Sección 2 y `src/extraccion/scrapling_exito.py` |
+> | RNF-01 | < 60 min | < 150 min desde el 19-nov, por el presupuesto fijo de Éxito con navegador | Sección 7.2 |
+> | Orquestación | Azure Data Factory | Pipelines de Synapse con un disparador diario (`pl_orquestador_diario`, 06:00) | Sección 9.2 y Etapa 3 |
+> | Transformación | Spark pool de Synapse | Spark 3.4 local en el Container Apps Job `caj-tfm-medallon`, a diario desde el 19-oct (antes, semanal) | Sección 9.2 y Etapa 3 |
+>
+> Imágenes en uso: `tfm-captura:0.7` y `tfm-medallon:0.8`.
 
 ---
 
@@ -33,6 +45,8 @@ Son cuatro cadenas y cinco sitios web. La viabilidad se verificó el 13 de octub
 **Descartada:** Falabella, porque no publica EAN ni referencia del fabricante.
 
 **Política de captura responsable:** solo información pública, cumplimiento del `robots.txt` de cada sitio, una petición a la vez por sitio con una pausa mínima de 1,5 s, User-Agent identificable y ninguna evasión de bloqueos. Si un sitio bloquea, se registra la falla; no se intenta esquivarla.
+
+> **Cambio durante el desarrollo (16-nov-2026, decisión del grupo).** Desde el 12-nov, Éxito responde al cliente HTTP con un desafío de Cloudflare y sin él no habría datos de esa cadena. El grupo decidió capturarlo con Scrapling (`src/extraccion/scrapling_exito.py`, `motor: scrapling` en `config/fuentes.yaml`): un Chromium que no se presenta como automatizado y resuelve el desafío. Se mantienen robots.txt, una página a la vez con pausa mínima de 3 s y la detención del sitio si el desafío persiste. No se usan proxies ni rotación de identidades. En Éxito el agente de usuario deja de ser identificable. En los otros cuatro sitios la política no cambia. La memoria del TFM declara esta decisión.
 
 ## 3. Universo de productos
 
@@ -198,11 +212,11 @@ flowchart LR
 
 | Capa | Servicio | Uso |
 |---|---|---|
-| Orquestación | Azure Data Factory | Disparador diario y semanal. Inicia el job de captura (actividad Web con identidad administrada), espera a que termine y lanza los notebooks de Spark. |
+| Orquestación | Azure Data Factory (vigente: pipelines de Synapse, ver Etapa 3) | Disparador diario y semanal. Inicia el job de captura (actividad Web con identidad administrada), espera a que termine y lanza los notebooks de Spark. |
 | Cómputo de captura | **Azure Container Apps Job** (plan por consumo) | Ejecuta la imagen Docker con Python y Playwright. Data Factory no corre Python con navegador por sí solo; es la opción más simple y barata frente a Azure Batch o una VM encendida. |
 | Imágenes | Azure Container Registry Basic o GitHub Container Registry | Si se usa GitHub, se ahorra el costo del registro. |
 | Almacenamiento | ADLS Gen2 | Contenedores `bronze/`, `silver/`, `gold/`, `maestro/` y `logs/`, particionados por `sitio/fecha=AAAA-MM-DD/`. |
-| Transformación | Synapse Spark pool (pequeño, con autopausa) | Bronze → Silver → Gold en tablas Delta. |
+| Transformación | Synapse Spark pool (pequeño, con autopausa; vigente: Spark local en `caj-tfm-medallon`, ver Etapa 3) | Bronze → Silver → Gold en tablas Delta. |
 | Modelo analítico | **Synapse SQL serverless** | Vistas sobre las tablas Delta de Gold. Se evita el *dedicated SQL pool* porque su costo por hora agotaría el crédito. |
 | Visualización | Power BI (licencia disponible en el equipo) | Actualización programada diaria y publicación para los usuarios comerciales. |
 

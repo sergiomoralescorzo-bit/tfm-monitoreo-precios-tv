@@ -1,14 +1,16 @@
 # Abreviaturas de color usadas en "Desc Producto" (maestro Alkosto) -> color normalizado.
-# Las marcadas con "# confirmar" son inferencias; validarlas con el equipo comercial.
+# Archivo del primer alcance (iPhone), descartado: no se usa en la versión de televisores.
+# Marcas: "confirmado" = validado con el equipo comercial; "inferido" = deducido de las descripciones y nunca
+# validado, porque el alcance se descartó antes (ver docs/anexos/A2_viabilidad_televisores.md).
 abreviaturas:
   Az: azul
   AzM: azul medianoche      # confirmado
-  Azmd: azul medianoche     # confirmar
+  Azmd: azul medianoche     # inferido
   Pl: plata
   Ng: negro
-  NgM: negro                # confirmar (negro mate / medianoche)
-  NgB: negro                # confirmar (negro brillante)
-  NgBr: negro               # confirmar
+  NgM: negro                # inferido (negro mate / medianoche)
+  NgB: negro                # inferido (negro brillante)
+  NgBr: negro               # inferido
   N: negro
   Nr: negro                 # confirmado por el equipo
   Na: naranja               # confirmado
@@ -22,10 +24,10 @@ abreviaturas:
   Vr: verde
   Vd: verde                 # confirmado
   Rs: rosa
-  RsDr: oro rosa            # confirmar
+  RsDr: oro rosa            # inferido
   Mr: morado                # confirmado
-  Mo: morado                # confirmar
-  Vt: violeta               # probable (equipo)
+  Mo: morado                # inferido
+  Vt: violeta               # inferido (sugerido por el equipo)
   Rj: rojo
   Am: amarillo
 

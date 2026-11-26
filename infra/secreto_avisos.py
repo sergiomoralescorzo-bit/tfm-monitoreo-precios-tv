@@ -3,16 +3,19 @@
 
 La URL lleva '&' y `az.cmd` la corta al pasarla como argumento (cmd.exe lo toma como separador),
 así que se usa la API REST con el cuerpo en un archivo. Lo llama `desplegar.ps1 -Pasos avisos`.
-Uso: python infra/secreto_avisos.py [grupo] [job]
+Uso: python infra/secreto_avisos.py [grupo] [job] [logic_app]
+Por defecto toma TFM_GRUPO, TFM_JOB_MEDALLON y TFM_LOGIC_APP_AVISOS, o los nombres del despliegue del TFM.
 """
 import json
+import os
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
-GRUPO = sys.argv[1] if len(sys.argv) > 1 else "RG-TFM-WEBSCRAPING"
-JOB = sys.argv[2] if len(sys.argv) > 2 else "caj-tfm-medallon"
+GRUPO = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("TFM_GRUPO", "RG-TFM-WEBSCRAPING")
+JOB = sys.argv[2] if len(sys.argv) > 2 else os.environ.get("TFM_JOB_MEDALLON", "caj-tfm-medallon")
+LOGIC_APP = sys.argv[3] if len(sys.argv) > 3 else os.environ.get("TFM_LOGIC_APP_AVISOS", "la-tfm-avisos")
 API = "2024-03-01"
 
 
@@ -26,7 +29,7 @@ def az(*args: str) -> str:
 sub = az("account", "show", "--query", "id", "-o", "tsv").strip()
 base = f"https://management.azure.com/subscriptions/{sub}/resourceGroups/{GRUPO}/providers"
 url = json.loads(az("rest", "--method", "post", "--uri",
-                    f"{base}/Microsoft.Logic/workflows/la-tfm-avisos/triggers/manual/listCallbackUrl?api-version=2019-05-01"))["value"]
+                    f"{base}/Microsoft.Logic/workflows/{LOGIC_APP}/triggers/manual/listCallbackUrl?api-version=2019-05-01"))["value"]
 job = json.loads(az("rest", "--method", "get", "--uri", f"{base}/Microsoft.App/jobs/{JOB}?api-version={API}"))
 otros = [s for s in job["properties"]["configuration"].get("secrets") or [] if s["name"] != "url-avisos"]
 if otros:

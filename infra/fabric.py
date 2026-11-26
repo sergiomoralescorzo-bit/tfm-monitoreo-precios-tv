@@ -7,9 +7,9 @@ Synapse no cambian. Cada paso es idempotente: si el elemento ya existe, lo reuti
 
 Pasos (en orden):
     identidad   crea la identidad del área de trabajo (Fabric)
-    permiso     le da Storage Blob Data Reader sobre sttfmwebscraping (Azure; requiere Owner del grupo)
+    permiso     le da Storage Blob Data Reader sobre la cuenta del lago (Azure; requiere Owner del grupo)
     conexion    conexión a ADLS con la identidad del área (Fabric la prueba al crearla)
-    lakehouse   lakehouse lh_tfm_oro con esquemas
+    lakehouse   lakehouse (lh_tfm_oro por defecto) con esquemas
     atajos      accesos directos de esquema dimensiones, hechos y kpis
     revisar     sincroniza el punto de conexión SQL y lista las tablas que ve el lakehouse
     modelo      modelo semántico TFM_Precios en Direct Lake, convertido del TMDL del PBIP al desplegar
@@ -19,11 +19,13 @@ Uso (con `az login` hecho por un administrador del área de trabajo):
     .venv/Scripts/python infra/fabric.py --area "TFM Monitoreo Precios"
     .venv/Scripts/python infra/fabric.py --area <id del área> --pasos atajos,revisar
 
-Para pasar a otra cuenta (fin de una prueba de 60 días): ver BITACORA.md, «Fabric: cambio de cuenta».
+Nombres de recursos: los valores por defecto son los del despliegue del TFM. Para otra suscripción se cambian
+con las variables de entorno TFM_GRUPO, TFM_CUENTA, TFM_CONTENEDOR, TFM_LAKEHOUSE y TFM_CONEXION_FABRIC.
 """
 import argparse
 import base64
 import json
+import os
 import re
 import subprocess
 import sys
@@ -35,12 +37,12 @@ import httpx
 from azure.identity import AzureCliCredential
 
 API = "https://api.fabric.microsoft.com/v1"
-CUENTA = "sttfmwebscraping"
-CONTENEDOR = "datalake-tfm"
-GRUPO = "RG-TFM-WEBSCRAPING"
+CUENTA = os.environ.get("TFM_CUENTA", "sttfmwebscraping")
+CONTENEDOR = os.environ.get("TFM_CONTENEDOR", "datalake-tfm")
+GRUPO = os.environ.get("TFM_GRUPO", "RG-TFM-WEBSCRAPING")
 SERVIDOR = f"https://{CUENTA}.dfs.core.windows.net"
-LAKEHOUSE = "lh_tfm_oro"
-CONEXION = "adls-tfm-oro"
+LAKEHOUSE = os.environ.get("TFM_LAKEHOUSE", "lh_tfm_oro")
+CONEXION = os.environ.get("TFM_CONEXION_FABRIC", "adls-tfm-oro")
 ESQUEMAS = ["dimensiones", "hechos", "kpis"]
 PASOS = ["identidad", "permiso", "conexion", "lakehouse", "atajos", "revisar", "modelo", "informe"]
 PBIP = Path(__file__).resolve().parents[1] / "powerbi"
