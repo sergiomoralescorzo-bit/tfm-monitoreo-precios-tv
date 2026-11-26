@@ -15,10 +15,11 @@
       "metadata": { "description": "URL del flujo de Teams 'Publicar en un canal cuando se reciba una solicitud de webhook'. Vacío = no publica en Teams." }
     },
     "synapse": { "type": "string", "defaultValue": "syn-tfm-webscraping" },
-    "ubicacion": { "type": "string", "defaultValue": "westus" }
+    "ubicacion": { "type": "string", "defaultValue": "westus" },
+    "nombreLogicApp": { "type": "string", "defaultValue": "la-tfm-notificaciones" }
   },
   "variables": {
-    "logicApp": "la-tfm-notificaciones",
+    "logicApp": "[parameters('nombreLogicApp')]",
     "conexion": "office365-tfm",
     "synapseId": "[resourceId('Microsoft.Synapse/workspaces', parameters('synapse'))]",
     "office365Api": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('ubicacion'), 'office365')]"

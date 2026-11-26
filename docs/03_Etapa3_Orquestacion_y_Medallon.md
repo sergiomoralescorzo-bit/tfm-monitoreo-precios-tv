@@ -6,7 +6,7 @@
 
 > **Estado vigente (26-nov-2026).** Este documento registra las decisiones en el orden en que se tomaron, y cada versión de imagen que menciona es la de su fecha. Hoy rige lo siguiente:
 >
-> - Un disparador diario (06:00) lanza `pl_orquestador_diario`, que encadena la captura y el medallón.
+> - Un disparador diario (06:00) lanza `pl_orquestador_diario`, que encadena la captura y el medallón, con hasta dos reintentos por etapa desde el 19-nov.
 > - El medallón corre **a diario desde el 19-oct** (antes, los domingos).
 > - Las imágenes en uso son `tfm-captura:0.7` (2 vCPU y 4 GiB desde la 0.6) y `tfm-medallon:0.8`.
 > - Éxito se captura con Scrapling desde el 16-nov.
@@ -73,7 +73,7 @@ flowchart LR
 | ACR Basic o GitHub Container Registry | **ACR Basic** | Decisión del equipo: la identidad administrada del job descarga la imagen sin credenciales guardadas. |
 | Contenedores `bronze/`, `silver/`, `gold/`… | **Un contenedor** `datalake-tfm` con carpetas `bronce/`, `plata/`, `oro/` y `codigo/` | Estructura definida por el equipo; la zona de aterrizaje se separa de la conformidad dentro de bronce. |
 | Spark en el pool de Synapse | **Spark 3.4 en modo local dentro de un Container Apps Job** (`caj-tfm-medallon`) | La cuota de vCores de Spark del área de trabajo es 0 (sección 9). Se usa el mismo código `src/medallon` y el mismo runtime (Spark 3.4, Delta 2.4); el notebook y el pool quedan para la opción A. |
-| Spark diario | **Spark semanal**; la captura sigue siendo diaria (desde el 19-oct el medallón corre a diario, ver sección 6) | El Spark pool es lo que más consume del crédito (RNF-07). Plata y oro se reconstruyen cada semana con todos los días capturados, así que no se pierde ningún precio diario: solo cambia la frescura de los tableros. |
+| Spark diario | **Medallón diario desde el 19-oct-2026**, con Spark local en `caj-tfm-medallon` (del 15 al 18-oct fue semanal) | Se planteó semanal porque el Spark pool era lo que más consumía del crédito (RNF-07). Con Spark local en un Container Apps Job (sección 9.3), cada corrida cabe en la asignación gratuita, así que desde el 19-oct el medallón corre a diario después de la captura (sección 6). Plata y oro se reconstruyen con todos los días capturados, de modo que nunca se perdió un precio diario. |
 
 ## 3. Captura en Azure Container Apps Job
 
@@ -162,15 +162,15 @@ Las vistas de Synapse SQL serverless sobre estas tablas son parte de la Etapa 4.
 
 | Pipeline | Actividades | Frecuencia prevista |
 |---|---|---|
-| `pl_orquestador_diario` | Desde el 19-oct. 1. *Execute Pipeline* de `pl_captura_diaria`, esperando a que termine. 2. Solo si terminó en `Succeeded`, *Execute Pipeline* de `pl_medallon_diario`. Las hijas avisan sus propios fallos. Si la captura falla, el medallón no corre y el orquestador queda en Failed. | Diaria, 06:00 (Colombia) |
+| `pl_orquestador_diario` | Desde el 19-oct. 1. *Execute Pipeline* de `pl_captura_diaria`, esperando a que termine. 2. *Execute Pipeline* de `pl_medallon_diario`. Las hijas avisan sus propios fallos. Desde el 19-nov, cada etapa corre dentro de un ciclo *Until* de hasta 3 intentos, con 20 min de pausa después de cada fallo, y el medallón corre aunque la captura siga fallando. La actividad «Resultado final» deja el orquestador en Failed si alguna etapa no se recupera. (Hasta el 19-nov no había reintentos y, si la captura fallaba, el medallón no corría.) | Diaria, 06:00 (Colombia) |
 | `pl_captura_diaria` | 1. Actividad Web `POST …/jobs/caj-tfm-captura/start` con la identidad de Synapse. 2. Guarda el nombre de la ejecución. 3. Bucle *Until* que cada 2 min consulta el estado de la ejecución (máximo 2,5 h). 4. Si el estado final no es `Succeeded`, la actividad *Fail* marca la pipeline como fallida (`CAPTURA_FALLIDA`). | La llama el orquestador |
 | `pl_medallon_diario` | Igual que la captura, con el job `caj-tfm-medallon`: inicia el job, consulta cada minuto (máximo 75 min) y falla con `MEDALLON_FALLIDO` si no termina en `Succeeded`. Hasta el 6-nov-2026 se llamó `pl_medallon_semanal`; se renombró porque corre a diario desde el 19-oct. | La llama el orquestador, después de la captura |
 | `pl_medallon_synapse` | Opción A: ejecuta `nb_medallon_semanal` en el pool `sptfm`. El notebook carga `codigo/tfm_src.zip` y llama a `semanal.ejecutar`. Solo funciona si se aprueba la cuota de Spark. | Ninguna (alternativa) |
 
 - **Disparador (por decisión del equipo; activo desde el 17-oct-2026):**
-  - Desde el 19-oct, un solo disparador, `tr_orquestador_diario`, inicia todos los días a las 06:00 de Colombia (`SA Pacific Standard Time`) la secuencia captura → medallón. Así oro se actualiza cada día, unos 30 a 40 minutos después de las 06:00 (desde el 16-nov, con Éxito en Scrapling, unas dos horas después).
+  - Desde el 19-oct, un solo disparador, `tr_orquestador_diario`, inicia todos los días a las 06:00 de Colombia (`SA Pacific Standard Time`) la secuencia captura → medallón. Así oro se actualiza cada día, unos 30 a 40 minutos después de las 06:00. Desde el 16-nov, con Éxito en Scrapling, la corrida completa tarda unas dos horas (por ejemplo, 115 min de captura y 10 min de medallón el 20-nov), y oro queda al día hacia las 08:00.
   - Reemplaza a `tr_captura_diaria` (diario, 06:00) y `tr_medallon_semanal` (domingos, 08:00), que se retiraron de Synapse y del repositorio.
-  - Costo del medallón diario: 2 vCPU durante unos 4 min al día, dentro de la capa gratuita de Container Apps, más unas 500 actividades de orquestación al mes (del orden de USD 0,5).
+  - Costo del medallón diario: el job `caj-tfm-medallon` usa 2 vCPU y 4 GiB solo mientras corre. En octubre tardaba unos 4 min, y desde noviembre, con más días acumulados, entre 9 y 10 min. Ese tiempo es solo el del medallón: la captura corre antes en `caj-tfm-captura` (2 vCPU y 4 GiB desde la imagen 0.6) y es la que ocupa casi toda la corrida diaria de unas dos horas. El medallón usa unos 36.000 vCPU-s al mes y cabe en la asignación gratuita de Container Apps (180.000 vCPU-s al mes). La captura, con 2 vCPU durante unas dos horas al día, la supera, y ese excedente se cobra con el crédito de Azure for Students. A eso se suman unas 500 actividades de orquestación al mes (del orden de USD 0,5).
   - El 18-oct no corrió nada porque el `startTime` coincidía con la primera hora programada (sección 9.7).
 
   Está definido en `synapse/triggers/` y se despliega con `infra\desplegar.ps1 -Pasos disparadores`, que no está en la lista por defecto (ese paso retira los dos disparadores anteriores si todavía existen). Para pausarlo: `az synapse trigger stop --workspace-name syn-tfm-webscraping --name tr_orquestador_diario`.

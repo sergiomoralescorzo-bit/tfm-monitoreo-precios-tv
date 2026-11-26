@@ -11,10 +11,11 @@
     },
     "synapse": { "type": "string", "defaultValue": "syn-tfm-webscraping" },
     "horasAtras": { "type": "int", "defaultValue": 5, "metadata": { "description": "Ventana de búsqueda: de 04:30 a 09:30 de Colombia." } },
-    "ubicacion": { "type": "string", "defaultValue": "westus" }
+    "ubicacion": { "type": "string", "defaultValue": "westus" },
+    "nombreLogicApp": { "type": "string", "defaultValue": "la-tfm-vigilancia" }
   },
   "variables": {
-    "logicApp": "la-tfm-vigilancia"
+    "logicApp": "[parameters('nombreLogicApp')]"
   },
   "resources": [
     {

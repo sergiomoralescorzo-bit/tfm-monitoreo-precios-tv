@@ -29,6 +29,9 @@ param(
     [string]$JobMedallon = "caj-tfm-medallon",          # Spark local (opción B de la sección 9.2 de la Etapa 3)
     [string]$Identidad   = "id-tfm-captura",            # identidad asignada por el usuario del job (AcrPull + lago)
     [string]$Pool        = "sptfm",
+    [string]$LogicAppNotificaciones = "la-tfm-notificaciones",   # avisos de fallos (correo y Teams)
+    [string]$LogicAppAvisos         = "la-tfm-avisos",           # resumen diario y alertas comerciales
+    [string]$LogicAppVigilancia     = "la-tfm-vigilancia",       # revisión de las 09:30
     [string]$CarpetaAzCli = "$env:ProgramFiles\Microsoft SDKs\Azure\CLI2\wbin"   # se usa solo si az no está en el PATH
 )
 
@@ -174,10 +177,11 @@ if (Paso "lago") {
 }
 
 if (Paso "notificaciones") {
-    Write-Host "== Notificaciones de fallos (Logic App + alerta de respaldo)" -ForegroundColor Cyan
+    Write-Host "== Notificaciones de fallos (Logic App $LogicAppNotificaciones + alerta de respaldo)" -ForegroundColor Cyan
     $Correos = $Correos -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ }
     if (-not $Correos) { throw "Faltan los correos de aviso: use -Correos o TFM_CORREOS_AVISO." }
-    $param = @{ correos = @{ value = @($Correos) }; teamsWebhook = @{ value = "$env:TFM_TEAMS_WEBHOOK" } }
+    $param = @{ correos = @{ value = @($Correos) }; teamsWebhook = @{ value = "$env:TFM_TEAMS_WEBHOOK" };
+                synapse = @{ value = $Synapse }; ubicacion = @{ value = $Region }; nombreLogicApp = @{ value = $LogicAppNotificaciones } }
     $tmp = Join-Path $env:TEMP "parametros_notificaciones.json"
     [IO.File]::WriteAllText($tmp, (@{ '$schema' = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#";
         contentVersion = "1.0.0.0"; parameters = $param } | ConvertTo-Json -Depth 5), (New-Object Text.UTF8Encoding $false))
@@ -192,10 +196,11 @@ if (Paso "notificaciones") {
 if (Paso "avisos") {
     # Resumen diario y alertas comerciales (src/servicios/avisos.py). El job del medallón los envía a esta
     # Logic App; su URL (con firma) se guarda como secreto del job, nunca en el repositorio.
-    Write-Host "== Avisos comerciales (Logic App la-tfm-avisos)" -ForegroundColor Cyan
+    Write-Host "== Avisos comerciales (Logic App $LogicAppAvisos)" -ForegroundColor Cyan
     $Correos = $Correos -split "," | ForEach-Object { $_.Trim() } | Where-Object { $_ }
     if (-not $Correos) { throw "Faltan los correos de aviso: use -Correos o TFM_CORREOS_AVISO." }
-    $param = @{ correos = @{ value = @($Correos) }; teamsWebhook = @{ value = "$env:TFM_TEAMS_WEBHOOK" } }
+    $param = @{ correos = @{ value = @($Correos) }; teamsWebhook = @{ value = "$env:TFM_TEAMS_WEBHOOK" };
+                ubicacion = @{ value = $Region }; nombreLogicApp = @{ value = $LogicAppAvisos } }
     $tmp = Join-Path $env:TEMP "parametros_avisos.json"
     [IO.File]::WriteAllText($tmp, (@{ '$schema' = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#";
         contentVersion = "1.0.0.0"; parameters = $param } | ConvertTo-Json -Depth 5), (New-Object Text.UTF8Encoding $false))
@@ -203,7 +208,7 @@ if (Paso "avisos") {
         AzOk deployment group create -g $Grupo -n avisos --template-file "$Proyecto\infra\avisos.json" --parameters "@$tmp" -o none
     } finally { Remove-Item $tmp -ErrorAction SilentlyContinue }
     # La URL lleva '&', que az.cmd corta: el secreto se guarda por REST desde un archivo.
-    python "$Proyecto\infra\secreto_avisos.py" $Grupo $JobMedallon; if ($LASTEXITCODE -ne 0) { throw "secreto_avisos.py" }
+    python "$Proyecto\infra\secreto_avisos.py" $Grupo $JobMedallon $LogicAppAvisos; if ($LASTEXITCODE -ne 0) { throw "secreto_avisos.py" }
     AzOk containerapp job update -n $JobMedallon -g $Grupo --set-env-vars "TFM_URL_AVISOS=secretref:url-avisos" -o none
     if (-not $env:TFM_TEAMS_WEBHOOK) { Write-Host "  Sin TFM_TEAMS_WEBHOOK: los avisos salen solo por correo." -ForegroundColor Yellow }
 }
@@ -214,8 +219,8 @@ if (Paso "synapse") {
         --file "@$Proyecto\synapse\notebooks\nb_medallon_semanal.ipynb" --spark-pool-name $Pool -o none
     # URL con firma de la Logic App: se pide en cada despliegue y solo queda en la pipeline (entrada segura).
     $urlAviso = az rest --method post -o tsv --query value `
-        --uri "https://management.azure.com/subscriptions/$suscripcion/resourceGroups/$Grupo/providers/Microsoft.Logic/workflows/la-tfm-notificaciones/triggers/manual/listCallbackUrl?api-version=2019-05-01"
-    if (-not $urlAviso) { throw "Falta la Logic App la-tfm-notificaciones: ejecute primero el paso notificaciones" }
+        --uri "https://management.azure.com/subscriptions/$suscripcion/resourceGroups/$Grupo/providers/Microsoft.Logic/workflows/$LogicAppNotificaciones/triggers/manual/listCallbackUrl?api-version=2019-05-01"
+    if (-not $urlAviso) { throw "Falta la Logic App ${LogicAppNotificaciones}: ejecute primero el paso notificaciones" }
     $reemplazos = @{ "__SUSCRIPCION__" = $suscripcion; "__GRUPO__" = $Grupo; "__JOB__" = $Job; "__JOB_MEDALLON__" = $JobMedallon;
                      "__CUENTA__" = $Cuenta; "__CONTENEDOR__" = $Contenedor; "__POOL__" = $Pool; "__URL_NOTIFICACION__" = $urlAviso }
     # pl_notificar_fallo va primero: las demás la llaman desde su rama de fallo. pl_orquestador_diario va al final:
@@ -231,14 +236,15 @@ if (Paso "synapse") {
 }
 
 if (Paso "vigilancia") {
-    Write-Host "== Vigilancia diaria de ejecuciones (Logic App la-tfm-vigilancia, 09:30 de Colombia)" -ForegroundColor Cyan
-    # Avisa por la-tfm-notificaciones si la captura (y el medallón) no terminó bien: cubre que no se ejecute.
+    Write-Host "== Vigilancia diaria de ejecuciones (Logic App $LogicAppVigilancia, 09:30 de Colombia)" -ForegroundColor Cyan
+    # Avisa por $LogicAppNotificaciones si la captura (y el medallón) no terminó bien: cubre que no se ejecute.
     $urlAviso = az rest --method post -o tsv --query value `
-        --uri "https://management.azure.com/subscriptions/$suscripcion/resourceGroups/$Grupo/providers/Microsoft.Logic/workflows/la-tfm-notificaciones/triggers/manual/listCallbackUrl?api-version=2019-05-01"
-    if (-not $urlAviso) { throw "Falta la Logic App la-tfm-notificaciones: ejecute primero el paso notificaciones" }
+        --uri "https://management.azure.com/subscriptions/$suscripcion/resourceGroups/$Grupo/providers/Microsoft.Logic/workflows/$LogicAppNotificaciones/triggers/manual/listCallbackUrl?api-version=2019-05-01"
+    if (-not $urlAviso) { throw "Falta la Logic App ${LogicAppNotificaciones}: ejecute primero el paso notificaciones" }
     $tmp = Join-Path $env:TEMP "parametros_vigilancia.json"
     [IO.File]::WriteAllText($tmp, (@{ '$schema' = "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#";
-        contentVersion = "1.0.0.0"; parameters = @{ urlAviso = @{ value = $urlAviso } } } | ConvertTo-Json -Depth 5), (New-Object Text.UTF8Encoding $false))
+        contentVersion = "1.0.0.0"; parameters = @{ urlAviso = @{ value = $urlAviso }; synapse = @{ value = $Synapse };
+            ubicacion = @{ value = $Region }; nombreLogicApp = @{ value = $LogicAppVigilancia } } } | ConvertTo-Json -Depth 5), (New-Object Text.UTF8Encoding $false))
     try {
         $idVig = az deployment group create -g $Grupo -n vigilancia --template-file "$Proyecto\infra\vigilancia.json" `
             --parameters "@$tmp" --query properties.outputs.principalId.value -o tsv

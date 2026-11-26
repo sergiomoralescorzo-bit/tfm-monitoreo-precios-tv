@@ -7,10 +7,11 @@
   "parameters": {
     "correos": { "type": "array", "metadata": { "description": "Destinatarios por defecto (mensajes con 'para' vacío)" } },
     "teamsWebhook": { "type": "securestring", "defaultValue": "", "metadata": { "description": "Flujo de Teams que publica en el canal. Vacío = solo correo." } },
-    "ubicacion": { "type": "string", "defaultValue": "westus" }
+    "ubicacion": { "type": "string", "defaultValue": "westus" },
+    "nombreLogicApp": { "type": "string", "defaultValue": "la-tfm-avisos" }
   },
   "variables": {
-    "logicApp": "la-tfm-avisos",
+    "logicApp": "[parameters('nombreLogicApp')]",
     "conexion": "office365-tfm",
     "office365Api": "[subscriptionResourceId('Microsoft.Web/locations/managedApis', parameters('ubicacion'), 'office365')]"
   },

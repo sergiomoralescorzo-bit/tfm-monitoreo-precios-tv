@@ -57,7 +57,7 @@ Las fases son las de la metodología propuesta en el capítulo 5 de la memoria: 
 ## Puesta en marcha local, sin Azure
 
 ```powershell
-py -3 -m venv .venv
+py -3.12 -m venv .venv   # o la versión 3.12+ instalada (py --list las muestra)
 .venv\Scripts\activate
 pip install -r requirements.txt
 python -m playwright install chromium
@@ -83,7 +83,7 @@ docker build -f medallon.Dockerfile -t tfm-medallon:local .
 docker run --rm -v "C:\lago_prueba:/lago" tfm-medallon:local --lago-local /lago --sin-avisos
 ```
 
-`--sin-avisos` omite el resumen diario y las alertas comerciales: no los arma ni los envía. Sin esa opción, el medallón los guarda en `oro/servicios/avisos/` y solo los envía si existe la variable `TFM_URL_AVISOS` (la URL de la Logic App, que en Azure es un secreto del trabajo).
+`--sin-avisos` omite el resumen diario y las alertas comerciales: no los arma ni los envía. Sin esa opción, el medallón los guarda en `oro/servicios/avisos/` y solo los envía si los datos son del día y existe la variable `TFM_URL_AVISOS` (la URL de la Logic App, que en Azure es un secreto del trabajo). Si el armado o el envío fallan, el medallón no falla: el error queda en su resumen.
 
 **Pruebas de Spark:**
 
